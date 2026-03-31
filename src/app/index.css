@@ -1,0 +1,287 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Dispatch Design System
+ *
+ * HOW TO THEME:
+ *  - Dark/Light mode: controlled by the `dark` class on <html> (next-themes).
+ *  - Color scheme: controlled by scheme-* classes on <html> (ThemeProvider.tsx).
+ *  - To add a new scheme, copy one of the .scheme-* blocks and change the hue.
+ *  - The single source of truth for scheme config is src/lib/theme.ts.
+ */
+
+@layer base {
+  /* ─── Light Mode (default / :root) ───────────────────────────────────────── */
+  :root {
+    --hue: 270;
+    --sat: 70%;
+
+    --background: var(--hue) 15% 97%;
+    --foreground: var(--hue) 15% 10%;
+
+    --card: var(--hue) 15% 100%;
+    --card-foreground: var(--hue) 15% 10%;
+
+    --popover: var(--hue) 15% 100%;
+    --popover-foreground: var(--hue) 15% 10%;
+
+    --primary: var(--hue) var(--sat) 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: var(--hue) 20% 92%;
+    --secondary-foreground: var(--hue) 15% 10%;
+
+    --muted: var(--hue) 15% 93%;
+    --muted-foreground: var(--hue) 10% 45%;
+
+    --accent: calc(var(--hue) + 20) 80% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 93% 40%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 199 89% 40%;
+    --info-foreground: 0 0% 100%;
+
+    --border: var(--hue) 15% 88%;
+    --input: var(--hue) 15% 88%;
+    --ring: var(--hue) var(--sat) 52%;
+
+    --radius: 0.625rem;
+
+    --sidebar-background: var(--hue) 20% 96%;
+    --sidebar-foreground: var(--hue) 15% 10%;
+    --sidebar-primary: var(--hue) var(--sat) 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--hue) 15% 90%;
+    --sidebar-accent-foreground: var(--hue) 15% 10%;
+    --sidebar-border: var(--hue) 15% 85%;
+    --sidebar-ring: var(--hue) var(--sat) 52%;
+
+    --status-pending: 45 93% 40%;
+    --status-assigned: 199 89% 40%;
+    --status-in-transit: var(--hue) var(--sat) 52%;
+    --status-delivered: 142 71% 35%;
+    --status-failed: 0 72% 51%;
+    --status-cancelled: var(--hue) 10% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(var(--hue) var(--sat) 52%) 0%, hsl(calc(var(--hue) + 20) 80% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(calc(var(--hue) + 20) 80% 50%) 0%, hsl(calc(var(--hue) + 50) 80% 45%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(var(--hue) 15% 100%) 0%, hsl(var(--hue) 15% 97%) 100%);
+
+    --shadow-sm: 0 1px 2px 0 hsl(var(--hue) 20% 10% / 0.06);
+    --shadow-md: 0 4px 6px -1px hsl(var(--hue) 20% 10% / 0.08), 0 2px 4px -2px hsl(var(--hue) 20% 10% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--hue) 20% 10% / 0.08), 0 4px 6px -4px hsl(var(--hue) 20% 10% / 0.06);
+    --shadow-glow: 0 0 20px hsl(var(--hue) var(--sat) 52% / 0.2);
+  }
+
+  /* ─── Dark Mode ──────────────────────────────────────────────────────────── */
+  .dark {
+    --background: var(--hue) 30% 8%;
+    --foreground: var(--hue) 10% 95%;
+
+    --card: var(--hue) 30% 12%;
+    --card-foreground: var(--hue) 10% 95%;
+
+    --popover: var(--hue) 30% 12%;
+    --popover-foreground: var(--hue) 10% 95%;
+
+    --primary: var(--hue) var(--sat) 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: var(--hue) 30% 18%;
+    --secondary-foreground: var(--hue) 10% 95%;
+
+    --muted: var(--hue) 20% 16%;
+    --muted-foreground: var(--hue) 10% 60%;
+
+    --accent: calc(var(--hue) + 20) 80% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 93% 47%;
+    --warning-foreground: var(--hue) 30% 8%;
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --border: var(--hue) 20% 20%;
+    --input: var(--hue) 20% 20%;
+    --ring: var(--hue) var(--sat) 60%;
+
+    --sidebar-background: var(--hue) 35% 6%;
+    --sidebar-foreground: var(--hue) 10% 95%;
+    --sidebar-primary: var(--hue) var(--sat) 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--hue) 30% 15%;
+    --sidebar-accent-foreground: var(--hue) 10% 95%;
+    --sidebar-border: var(--hue) 20% 18%;
+    --sidebar-ring: var(--hue) var(--sat) 60%;
+
+    --status-pending: 45 93% 47%;
+    --status-assigned: 199 89% 48%;
+    --status-in-transit: var(--hue) var(--sat) 60%;
+    --status-delivered: 142 71% 45%;
+    --status-failed: 0 72% 51%;
+    --status-cancelled: var(--hue) 10% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(var(--hue) var(--sat) 60%) 0%, hsl(calc(var(--hue) + 20) 80% 55%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(calc(var(--hue) + 20) 80% 55%) 0%, hsl(calc(var(--hue) + 50) 80% 50%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(var(--hue) 30% 14%) 0%, hsl(var(--hue) 30% 10%) 100%);
+
+    --shadow-sm: 0 1px 2px 0 hsl(var(--hue) 50% 5% / 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(var(--hue) 50% 5% / 0.4), 0 2px 4px -2px hsl(var(--hue) 50% 5% / 0.3);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--hue) 50% 5% / 0.4), 0 4px 6px -4px hsl(var(--hue) 50% 5% / 0.3);
+    --shadow-glow: 0 0 20px hsl(var(--hue) var(--sat) 60% / 0.4);
+  }
+
+  /* ─── Color Schemes (hue overrides) ─────────────────────────────────────── */
+  /* Purple is the default (hue: 270). No class needed. */
+
+  .scheme-blue {
+    --hue: 217;
+    --sat: 91%;
+  }
+
+  .scheme-orange {
+    --hue: 25;
+    --sat: 95%;
+  }
+
+  .scheme-green {
+    --hue: 142;
+    --sat: 71%;
+  }
+
+  .scheme-rose {
+    --hue: 346;
+    --sat: 84%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/40 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/60;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .stat-card {
+    @apply bg-card rounded-lg p-4 border border-border shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/30;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-2 px-2.5 py-2 rounded-md text-sm font-medium transition-all duration-200;
+  }
+
+  .nav-link-active {
+    @apply bg-sidebar-accent text-sidebar-primary;
+  }
+
+  .mobile-card {
+    @apply bg-card rounded-xl p-3 border border-border shadow-sm;
+  }
+}
+
+@layer utilities {
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 5px hsl(var(--primary) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.6);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+}
