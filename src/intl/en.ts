@@ -1,11 +1,5 @@
 /**
  * English translations for Dispatch
- *
- * HOW TO EDIT:
- *  - All user-facing strings live here.
- *  - Add a matching key in `am.ts` for every key you add here.
- *  - Nest keys by feature/page so the file stays easy to navigate.
- *  - Never use em dashes (--) in strings; use commas or colons instead.
  */
 
 const en = {
@@ -252,6 +246,141 @@ const en = {
     totalShipments: "Total Shipments",
     assignShipment: "Assign Shipment",
     overview: "Fleet Overview",
+  },
+
+  // ─── Shipments Management ───────────────────────────────────────────────────
+  shipments: {
+    title: "Shipments",
+    subtitle: "Manage and assign shipments to drivers",
+    searchPlaceholder: "Search Shipments...",
+    filters: {
+      all: "All",
+      pending: "Pending",
+      inTransit: "In Transit",
+      delivered: "Delivered",
+    },
+    table: {
+      id: "ID",
+      merchant: "Merchant",
+      route: "Route",
+      driver: "Driver",
+      status: "Status",
+      fee: "Fee",
+      actions: "Actions",
+    },
+    status: {
+      urgent: "Urgent",
+      pending: "Pending",
+      assigned: "Assigned",
+      inTransit: "In Transit",
+      delivered: "Delivered",
+      returned: "Returned",
+    },
+    empty: {
+      title: "No Shipments Found",
+      description: "Try adjusting your filters or search terms.",
+    },
+  },
+
+  // ─── Driver Management ──────────────────────────────────────────────────────
+  drivers: {
+    title: "Drivers",
+    subtitle: "Manage your delivery drivers",
+    searchPlaceholder: "Search drivers...",
+    filters: {
+      all: "All",
+      active: "Active",
+      inactive: "Inactive",
+    },
+    table: {
+      driver: "Driver",
+      vehicle: "Vehicle",
+      deliveries: "Deliveries",
+      status: "Status",
+      rating: "Rating",
+      actions: "Actions",
+    },
+    status: {
+      active: "Active",
+      inactive: "Inactive",
+      onBreak: "On Break",
+      busy: "Busy",
+    },
+    empty: {
+      title: "No Drivers Found",
+      description: "Check your search term or filter status.",
+    },
+  },
+
+  // ─── Revenue Management ─────────────────────────────────────────────────────
+  revenue: {
+    title: "Revenue",
+    subtitle: "Track Delivery Fees and in-cash collections",
+    stats: {
+      deliveryFees: "Delivery Fees",
+      codCollected: "COD Collected",
+      avgPerDelivery: "Avg. per Delivery",
+      successRate: "{rate}% Success",
+      last7Days: "Last 7 Days",
+      totalShipments: "Total Shipments",
+    },
+    trend: {
+      title: "Revenue Trend",
+    },
+    collections: {
+      title: "Driver Collections",
+      table: {
+        driver: "Driver",
+        deliveries: "Deliveries",
+        feesCollected: "Delivery Fees Collected",
+        date: "Date",
+      },
+    },
+  },
+
+  // ─── Fleet Map ──────────────────────────────────────────────────────────────
+  fleetMap: {
+    title: "Fleet Map",
+    subtitle: "Real-time geographic distribution of your fleet",
+    sidebar: {
+      activeDrivers: "Active Drivers",
+      idleDrivers: "Idle / Available",
+      onDelivery: "On Delivery",
+      searchPlaceholder: "Search driver...",
+    },
+    marker: {
+      assignment: "Assignment",
+      status: "Status",
+      idle: "Idle",
+      viewDetails: "View Details",
+    },
+  },
+
+  // ─── Reports ────────────────────────────────────────────────────────────────
+  reports: {
+    title: "Reports",
+    subtitle: "Comprehensive fleet performance and operational analytics",
+    stats: {
+      successRate: "Overall Success",
+      avgDeliveryTime: "Avg. Delivery Time",
+      onTimePercentage: "On-Time Ratio",
+      fleetUtilization: "Fleet Utilization",
+    },
+    charts: {
+      deliveryVolume: "Delivery Volume Trend",
+      statusBreakdown: "Delivery Status Breakdown",
+      vehicleUsage: "Vehicle Type Utilization",
+    },
+    leaderboard: {
+      title: "Top Performing Drivers",
+      table: {
+        driver: "Driver",
+        trips: "Trips",
+        success: "Success %",
+        rating: "Rating",
+      },
+    },
+    export: "Export Full Report",
   },
 
   // ─── Common ─────────────────────────────────────────────────────────────────

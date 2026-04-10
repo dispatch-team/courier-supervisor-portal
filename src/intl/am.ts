@@ -1,12 +1,5 @@
 /**
  * Amharic translations for Dispatch
- *
- * HOW TO EDIT:
- *  - Mirror every key from `en.ts` here.
- *  - Keep the brand name "Dispatch" in English.
- *  - Amharic script (Ge'ez) is right-to-left within words but the language
- *    itself flows left-to-right at the sentence level in modern digital use,
- *    so no `dir="rtl"` is needed.
  */
 
 import type { Messages } from "./en";
@@ -182,7 +175,7 @@ const am: Messages = {
     },
 
     lockout: {
-      message: "ብዙ ስህተتا ሙከራዎች። እባክዎ በ {time} ውስጥ እንደገና ይሞክሩ።",
+      message: "ብዙ ስህተታ ሙከራዎች። እባክዎ በ {time} ውስጥ እንደገና ይሞክሩ።",
     },
   },
 
@@ -252,6 +245,141 @@ const am: Messages = {
     totalShipments: "ጠቅላላ ትዕዛዞች",
     assignShipment: "ትዕዛዝ ምደብ",
     overview: "የፍሊት አጠቃላይ እይታ",
+  },
+
+  // ─── Shipments Management ───────────────────────────────────────────────────
+  shipments: {
+    title: "ትዕዛዞች",
+    subtitle: "ትዕዛዞችን ያስተዳድሩ እና ለሾፌሮች ይመድቡ",
+    searchPlaceholder: "ትዕዛዞችን ይፈልጉ...",
+    filters: {
+      all: "ሁሉም",
+      pending: "በሂደት ላይ",
+      inTransit: "በመንገድ ላይ",
+      delivered: "የደረሱ",
+    },
+    table: {
+      id: "መለያ",
+      merchant: "ነጋዴ",
+      route: "መንገድ",
+      driver: "ሾፌር",
+      status: "ሁኔታ",
+      fee: "ክፍያ",
+      actions: "ድርጊቶች",
+    },
+    status: {
+      urgent: "አስቸኳይ",
+      pending: "በሂደት ላይ",
+      assigned: "ተመድቧል",
+      inTransit: "በመንገድ ላይ",
+      delivered: "የደረሰ",
+      returned: "የተመለሰ",
+    },
+    empty: {
+      title: "ምንም ትዕዛዝ አልተገኘም",
+      description: "እባክዎን ማጣሪያዎችን ወይም የፍለጋ ቃላትን ያስተካክሉ።",
+    },
+  },
+
+  // ─── Driver Management ──────────────────────────────────────────────────────
+  drivers: {
+    title: "ሾፌሮች",
+    subtitle: "የዕቃ አቅራቢ ሾፌሮችን ያስተዳድሩ",
+    searchPlaceholder: "ሾፌሮችን ይፈልጉ...",
+    filters: {
+      all: "ሁሉም",
+      active: "ንቁ",
+      inactive: "ያልነቁ",
+    },
+    table: {
+      driver: "ሾፌር",
+      vehicle: "ተሽከርካሪ",
+      deliveries: "አቅርቦቶች",
+      status: "ሁኔታ",
+      rating: "ደረጃ",
+      actions: "ድርጊቶች",
+    },
+    status: {
+      active: "ንቁ",
+      inactive: "ያልነቁ",
+      onBreak: "በእረፍት ላይ",
+      busy: "ሥራ ላይ",
+    },
+    empty: {
+      title: "ምንም ሾፌር አልተገኘም",
+      description: "እባክዎን የፍለጋ ቃላትን ወይም የማጣሪያ ሁኔታን ያረጋግጡ።",
+    },
+  },
+
+  // ─── Revenue Management ─────────────────────────────────────────────────────
+  revenue: {
+    title: "ገቢ",
+    subtitle: "የዕቃ ማቅረቢያ ክፍያዎችን እና የጥሬ ገንዘብ ስብስቦችን ይከታተሉ",
+    stats: {
+      deliveryFees: "የዕቃ ማቅረቢያ ክፍያዎች",
+      codCollected: "COD ተሰብስቧል",
+      avgPerDelivery: "አማካይ በአንድ አቅርቦት",
+      successRate: "{rate}% ስኬት",
+      last7Days: "ያለፉት 7 ቀናት",
+      totalShipments: "ጠቅላላ ትዕዛዞች",
+    },
+    trend: {
+      title: "የገቢ አዝማሚያ",
+    },
+    collections: {
+      title: "የሾፌር ስብስቦች",
+      table: {
+        driver: "ሾፌር",
+        deliveries: "አቅርቦቶች",
+        feesCollected: "የተሰበሰበ ክፍያ",
+        date: "ቀን",
+      },
+    },
+  },
+
+  // ─── Fleet Map ──────────────────────────────────────────────────────────────
+  fleetMap: {
+    title: "የፍሊት ካርታ",
+    subtitle: "የሾፌሮችዎን መልክዓ ምድራዊ ስርጭት በቅጽበት ይከታተሉ",
+    sidebar: {
+      activeDrivers: "ንቁ ሾፌሮች",
+      idleDrivers: "ሥራ ያልያዙ / ዝግጁ",
+      onDelivery: "በሥራ ላይ",
+      searchPlaceholder: "ሾፌር ይፈልጉ...",
+    },
+    marker: {
+      assignment: "ተግባር",
+      status: "ሁኔታ",
+      idle: "ዝግጁ",
+      viewDetails: "ዝርዝር ይመልከቱ",
+    },
+  },
+
+  // ─── Reports ────────────────────────────────────────────────────────────────
+  reports: {
+    title: "ሪፖርቶች",
+    subtitle: "አጠቃላይ የፍሊት አፈጻጸም እና የሥራ ትንታኔ",
+    stats: {
+      successRate: "አጠቃላይ ስኬት",
+      avgDeliveryTime: "አማካይ የማቅረቢያ ጊዜ",
+      onTimePercentage: "በሰዓቱ የመድረስ መጠን",
+      fleetUtilization: "የፍሊት አጠቃቀም",
+    },
+    charts: {
+      deliveryVolume: "የዕቃ አቅርቦት መጠን አዝማሚያ",
+      statusBreakdown: "የዕቃ አቅርቦት ሁኔታ ዝርዝር",
+      vehicleUsage: "የተሽከርካሪ ዓይነት አጠቃቀም",
+    },
+    leaderboard: {
+      title: "ከፍተኛ አፈጻጸም ያላቸው ሾፌሮች",
+      table: {
+        driver: "ሾፌር",
+        trips: "ጉዞዎች",
+        success: "ስኬት %",
+        rating: "ደረጃ",
+      },
+    },
+    export: "ሙሉ ሪፖርት አውርድ",
   },
 
   // ─── Common ─────────────────────────────────────────────────────────────────
