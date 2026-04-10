@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -15,9 +15,14 @@ interface AuthGuardProps {
 export function AuthGuard({ children, allowedRoles, loginPath }: AuthGuardProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading || !mounted) return;
 
     if (!isAuthenticated) {
       router.replace(loginPath);
@@ -27,11 +32,15 @@ export function AuthGuard({ children, allowedRoles, loginPath }: AuthGuardProps)
     if (allowedRoles && user && !user.roles.some((r) => allowedRoles.includes(r))) {
       router.replace(loginPath);
     }
-  }, [isAuthenticated, isLoading, user, allowedRoles, loginPath, router]);
+  }, [isAuthenticated, isLoading, user, allowedRoles, loginPath, router, mounted]);
 
-  if (isLoading) {
+  // Handle the initial hydration mismatch by showing nothing or the loader until mounted
+  if (!mounted || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div 
+        className="min-h-screen flex items-center justify-center bg-background" 
+        suppressHydrationWarning
+      >
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
