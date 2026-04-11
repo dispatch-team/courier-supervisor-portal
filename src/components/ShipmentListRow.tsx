@@ -19,6 +19,8 @@ import type { Shipment, ShipmentStatus } from "@/types/api";
 
 interface ShipmentListRowProps {
   shipment: Shipment;
+  selected?: boolean;
+  onSelectToggle?: (code: string) => void;
 }
 
 function formatStatus(status: ShipmentStatus): string {
@@ -76,7 +78,7 @@ function getStatusConfig(status: ShipmentStatus) {
   }
 }
 
-export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
+export function ShipmentListRow({ shipment, selected, onSelectToggle }: ShipmentListRowProps) {
   const t = useI18n("shipments");
   const router = useRouter();
   const [assignOpen, setAssignOpen] = useState(false);
@@ -100,7 +102,18 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
         className="p-4 md:p-6 mb-4 !rounded-3xl hover:bg-card/40 hover:border-primary/30 transition-all shadow-md active:scale-95"
         gradient={false}
       >
-        <div className="grid grid-cols-2 md:grid-cols-8 gap-4 items-center relative z-10 font-sans">
+        <div className="flex items-center gap-4 relative z-10 font-sans">
+          {onSelectToggle && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={selected ?? false}
+                onChange={() => onSelectToggle(shipment.code)}
+                className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+              />
+            </div>
+          )}
+          <div className="grid grid-cols-2 md:grid-cols-8 gap-4 items-center flex-1">
           {/* Tracking Number */}
           <div className="md:col-span-1">
             <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
@@ -210,6 +223,7 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
           </div>
         </div>
       </GlassCard>

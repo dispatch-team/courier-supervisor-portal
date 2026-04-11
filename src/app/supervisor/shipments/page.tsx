@@ -2,13 +2,47 @@
 
 import { useI18n } from "@/intl";
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { ShipmentSearchFilter, DEFAULT_FILTERS, type ShipmentFilterValues } from "@/components/ShipmentSearchFilter";
-import { ShipmentListRow } from "@/components/ShipmentListRow";
-import { Inbox, Loader2, AlertCircle, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { AssignDriverDialog } from "@/components/AssignDriverDialog";
+import { BatchAssignDialog } from "@/components/BatchAssignDialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Inbox,
+  Loader2,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  MoreHorizontal,
+  Users,
+  Truck,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { useShipments, type ShipmentFilters } from "@/hooks/queries/use-shipments";
-import type { Shipment } from "@/types/api";
+import { cn } from "@/lib/utils";
+import type { Shipment, ShipmentStatus } from "@/types/api";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -36,22 +70,87 @@ function sortShipments(shipments: Shipment[], field: SortField, dir: SortDir): S
   });
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 },
-  },
-};
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatStatus(status: ShipmentStatus): string {
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function getStatusStyle(status: ShipmentStatus) {
+  switch (status) {
+    case "pending":
+      return { icon: Clock, cls: "bg-amber-500/15 text-amber-500 border-amber-500/25" };
+    case "assigned_to_courier":
+    case "assigned_to_driver":
+      return { icon: Truck, cls: "bg-blue-500/15 text-blue-500 border-blue-500/25" };
+    case "picked_up":
+    case "in_transit":
+      return { icon: Truck, cls: "bg-indigo-500/15 text-indigo-500 border-indigo-500/25" };
+    case "delivered":
+      return { icon: CheckCircle2, cls: "bg-green-500/15 text-green-500 border-green-500/25" };
+    case "failed":
+      return { icon: AlertCircle, cls: "bg-red-500/15 text-red-500 border-red-500/25" };
+    case "returned":
+      return { icon: RotateCcw, cls: "bg-orange-500/15 text-orange-500 border-orange-500/25" };
+    case "cancelled":
+      return { icon: XCircle, cls: "bg-muted/50 text-muted-foreground border-muted" };
+  }
+}
+
+function SortableHeader({
+  label,
+  field,
+  currentField,
+  currentDir,
+  onSort,
+}: {
+  label: string;
+  field: SortField;
+  currentField: SortField;
+  currentDir: SortDir;
+  onSort: (f: SortField) => void;
+}) {
+  const active = currentField === field;
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="-ml-3 h-8 text-xs font-medium"
+      onClick={() => onSort(field)}
+    >
+      {label}
+      {active ? (
+        currentDir === "asc" ? (
+          <ArrowUp className="ml-1 h-3 w-3" />
+        ) : (
+          <ArrowDown className="ml-1 h-3 w-3" />
+        )
+      ) : (
+        <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />
+      )}
+    </Button>
+  );
+}
 
 export default function ShipmentsPage() {
   const t = useI18n("shipments");
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ShipmentFilterValues>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false);
+  const [assignShipment, setAssignShipment] = useState<Shipment | null>(null);
 
   const queryFilters: ShipmentFilters = {
     page,
@@ -108,6 +207,27 @@ export default function ShipmentsPage() {
     setPage(1);
   };
 
+  const handleSelectToggle = (code: string) => {
+    setSelectedCodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedCodes.size === processedShipments.length) {
+      setSelectedCodes(new Set());
+    } else {
+      setSelectedCodes(new Set(processedShipments.map((s) => s.code)));
+    }
+  };
+
+  const selectedShipments = processedShipments.filter((s) => selectedCodes.has(s.code));
+  const allSelected = processedShipments.length > 0 && selectedCodes.size === processedShipments.length;
+  const someSelected = selectedCodes.size > 0 && !allSelected;
+
   if (isLoading && !data) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -128,111 +248,184 @@ export default function ShipmentsPage() {
   }
 
   return (
-    <div className="space-y-10 min-h-screen">
-      {/* Page Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10"
-      >
-        <h1 className="text-4xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60 mb-2">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground font-medium text-lg italic">
-          {t("subtitle")}
-        </p>
-        <div className="flex items-center gap-2 mt-1">
+    <div className="space-y-6">
+      {/* Header Row */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {totalCount} total shipments
+            Manage and assign shipments to drivers
           </p>
-          {isFetching && (
-            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-          )}
         </div>
-      </motion.div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
+          {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
+          <span>{totalCount} shipments</span>
+        </div>
+      </div>
 
-      {/* Controls */}
+      {/* Filters */}
       <ShipmentSearchFilter
         onSearch={setSearchTerm}
         onFiltersChange={handleFiltersChange}
         filters={filters}
       />
 
-      {/* Column Headers with Sort */}
-      <div className="hidden md:grid grid-cols-8 gap-4 md:px-6 mb-2 items-center">
-        {([
-          { field: "code" as SortField, label: t("table.id") },
-          { field: null, label: "Recipient" },
-          { field: null, label: "Pickup" },
-          { field: null, label: "Delivery" },
-          { field: "status" as SortField | null, label: t("table.status") },
-          { field: null, label: t("table.driver") },
-          { field: "created_at" as SortField, label: "Created" },
-          { field: null, label: t("table.actions") },
-        ] as const).map((col, i) => (
-          <div key={i} className="md:col-span-1">
-            {col.field ? (
-              <button
-                onClick={() => handleSort(col.field as SortField)}
-                className="flex items-center gap-1 uppercase tracking-[0.2em] font-black text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {col.label}
-                <ArrowUpDown className={`h-3 w-3 ${sortField === col.field ? "text-primary" : ""}`} />
-              </button>
+      {/* Table */}
+      <div className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm shadow-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent bg-muted/30 border-border/50">
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
+              <TableHead>
+                <SortableHeader label="ID" field="code" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+              </TableHead>
+              <TableHead className="hidden lg:table-cell">Recipient</TableHead>
+              <TableHead className="hidden xl:table-cell">Pickup</TableHead>
+              <TableHead className="hidden xl:table-cell">Delivery</TableHead>
+              <TableHead>
+                <SortableHeader label="Status" field="status" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+              </TableHead>
+              <TableHead className="hidden md:table-cell">Driver</TableHead>
+              <TableHead className="hidden md:table-cell">
+                <SortableHeader label="Created" field="created_at" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+              </TableHead>
+              <TableHead className="w-[50px]" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {processedShipments.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="h-32 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Inbox className="h-8 w-8 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">
+                      {searchTerm
+                        ? "No shipments match your search."
+                        : "No shipments currently assigned to your courier company."}
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : (
-              <span className={`uppercase tracking-[0.2em] font-black text-[10px] text-muted-foreground opacity-40 ${i === 7 ? "text-right block" : ""}`}>
-                {col.label}
-              </span>
+              processedShipments.map((shipment) => {
+                const status = getStatusStyle(shipment.status);
+                const StatusIcon = status.icon;
+                const isSelected = selectedCodes.has(shipment.code);
+
+                return (
+                  <TableRow
+                    key={shipment.code}
+                    data-state={isSelected ? "selected" : undefined}
+                    className={cn(
+                      "cursor-pointer transition-all duration-150 group/row",
+                      "hover:bg-primary/[0.04] hover:shadow-[inset_2px_0_0_0_hsl(var(--primary))]",
+                      "animate-in fade-in-50 slide-in-from-bottom-1 duration-300",
+                      isSelected && "bg-primary/[0.06]",
+                    )}
+                    onClick={() => router.push(`/supervisor/shipments/${shipment.code}`)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => handleSelectToggle(shipment.code)}
+                        aria-label={`Select ${shipment.code}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-mono font-semibold text-sm group-hover/row:text-primary transition-colors">
+                          {shipment.code}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[160px]">
+                          {shipment.description}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <div>
+                        <p className="text-sm font-medium truncate max-w-[140px]">
+                          {shipment.end_address_contact_name || "—"}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[140px]">
+                          {shipment.end_address_phone_number || ""}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <p className="text-sm truncate max-w-[140px]">
+                        {shipment.start_address}
+                      </p>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <p className="text-sm truncate max-w-[140px]">
+                        {shipment.end_address}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <div
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border",
+                          status.cls,
+                        )}
+                      >
+                        <StatusIcon className="h-3 w-3" />
+                        {formatStatus(shipment.status)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <span className="text-sm">
+                        {shipment.assigned_driver_id
+                          ? `Driver #${shipment.assigned_driver_id}`
+                          : <span className="text-muted-foreground">Unassigned</span>}
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <span className="text-sm text-muted-foreground">
+                        {formatDate(shipment.created_at)}
+                      </span>
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => setAssignShipment(shipment)}>
+                            Assign Driver
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/supervisor/shipments/${shipment.code}`)}
+                          >
+                            View Details
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
-          </div>
-        ))}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Shipment List */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        key={filters.status + filters.driverAssignment + searchTerm + sortField + sortDir}
-        className="relative z-10"
-      >
-        <AnimatePresence mode="popLayout">
-          {processedShipments.map((shipment) => (
-            <ShipmentListRow key={shipment.code} shipment={shipment} />
-          ))}
-        </AnimatePresence>
-
-        {processedShipments.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center p-20 text-center rounded-[3rem] border-4 border-dashed border-border/20 bg-card/10 backdrop-blur-sm"
-          >
-            <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-glow shadow-primary/20">
-              <Inbox className="h-12 w-12 text-primary/50" />
-            </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">
-              {searchTerm ? t("empty.title") : "No Shipments Found"}
-            </h3>
-            <p className="text-muted-foreground max-w-sm font-medium">
-              {searchTerm
-                ? t("empty.description")
-                : "No shipments currently assigned to your courier company."}
-            </p>
-          </motion.div>
-        )}
-      </motion.div>
-
-      {/* Pagination Controls */}
+      {/* Pagination */}
       {totalCount > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/20">
-          {/* Page Size Selector */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Show</span>
+            <span>Rows per page</span>
             <select
               value={pageSize}
               onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="bg-card/30 border border-border/40 rounded-lg px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="bg-transparent border border-border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>
@@ -240,43 +433,77 @@ export default function ShipmentsPage() {
                 </option>
               ))}
             </select>
-            <span>per page</span>
           </div>
-
-          {/* Page Navigation */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               Page {page} of {totalPages}
             </span>
-            <div className="flex gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-lg"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-lg"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       )}
 
-      {/* Background Elements */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-[20%] -right-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 -left-20 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
-      </div>
+      {/* Floating Selection Bar */}
+      {selectedCodes.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-200">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-card border border-border shadow-2xl shadow-black/20 backdrop-blur-lg">
+            <div className="flex items-center gap-2">
+              <div className="h-6 min-w-6 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center px-1.5">
+                {selectedCodes.size}
+              </div>
+              <span className="text-sm font-medium text-foreground">selected</span>
+            </div>
+            <div className="w-px h-5 bg-border" />
+            <Button
+              size="sm"
+              onClick={() => setBatchDialogOpen(true)}
+              className="gap-1.5 h-7 text-xs"
+            >
+              <Users className="h-3 w-3" />
+              Batch Assign
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedCodes(new Set())}
+              className="h-7 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Clear
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Dialogs */}
+      <AssignDriverDialog
+        shipment={assignShipment}
+        open={!!assignShipment}
+        onOpenChange={(open) => { if (!open) setAssignShipment(null); }}
+      />
+      <BatchAssignDialog
+        shipments={selectedShipments}
+        open={batchDialogOpen}
+        onOpenChange={setBatchDialogOpen}
+        onComplete={() => setSelectedCodes(new Set())}
+      />
     </div>
   );
 }

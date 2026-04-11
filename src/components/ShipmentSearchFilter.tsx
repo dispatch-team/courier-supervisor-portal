@@ -1,10 +1,13 @@
 "use client";
 
 import { useI18n } from "@/intl";
-import { Search, X } from "lucide-react";
+import { Search, X, SlidersHorizontal, Calendar, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 
 export interface ShipmentFilterValues {
   status: string;
@@ -42,12 +45,11 @@ const DEFAULT_FILTERS: ShipmentFilterValues = {
   driverAssignment: "all",
 };
 
-function hasActiveFilters(filters: ShipmentFilterValues): boolean {
+function countAdvanced(filters: ShipmentFilterValues): number {
   return (
-    filters.status !== "all" ||
-    filters.dateStart !== "" ||
-    filters.dateEnd !== "" ||
-    filters.driverAssignment !== "all"
+    (filters.dateStart ? 1 : 0) +
+    (filters.dateEnd ? 1 : 0) +
+    (filters.driverAssignment !== "all" ? 1 : 0)
   );
 }
 
@@ -58,6 +60,16 @@ function validateDateRange(start: string, end: string): string | null {
   return null;
 }
 
+function formatDateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+const inputClass =
+  "h-8 w-full bg-background border border-border rounded-md px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring [color-scheme:dark]";
+
 export function ShipmentSearchFilter({
   onSearch,
   onFiltersChange,
@@ -65,7 +77,9 @@ export function ShipmentSearchFilter({
 }: ShipmentSearchFilterProps) {
   const t = useI18n("shipments");
   const [searchTerm, setSearchTerm] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const dateError = validateDateRange(filters.dateStart, filters.dateEnd);
+  const advancedCount = countAdvanced(filters);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -77,107 +91,222 @@ export function ShipmentSearchFilter({
     onFiltersChange({ ...filters, [key]: value });
   };
 
-  const clearFilters = () => {
+  const clearFilter = (key: keyof ShipmentFilterValues) => {
+    onFiltersChange({ ...filters, [key]: DEFAULT_FILTERS[key] });
+  };
+
+  const clearAll = () => {
     setSearchTerm("");
     onSearch("");
     onFiltersChange(DEFAULT_FILTERS);
   };
 
   return (
-    <div className="space-y-4 mb-8 relative z-20">
-      {/* Row 1: Search + Clear */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:max-w-md group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          </div>
+    <div className="flex flex-col gap-3">
+      {/* Toolbar: Search + Filter Popover */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input
             type="text"
             value={searchTerm}
             onChange={handleSearchChange}
-            placeholder={t("searchPlaceholder")}
-            className="block w-full pl-11 pr-4 py-3 bg-card/30 backdrop-blur-xl border border-border/40 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-muted-foreground/50 shadow-sm"
+            placeholder="Search shipments..."
+            className={cn(inputClass, "pl-8 max-w-none")}
           />
         </div>
 
-        {hasActiveFilters(filters) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="text-muted-foreground hover:text-foreground shrink-0"
-          >
-            <X className="h-4 w-4 mr-1" />
-            Clear all filters
-          </Button>
-        )}
+        {/* Status Tabs — inline */}
+        <div className="hidden sm:flex items-center gap-0.5 ml-1">
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => updateFilter("status", opt.id)}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                filters.status === opt.id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          {/* Filter Popover */}
+          <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-8 gap-1.5 text-xs",
+                  advancedCount > 0 && "border-primary/50",
+                )}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filters
+                {advancedCount > 0 && (
+                  <span className="h-4 min-w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold px-1">
+                    {advancedCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="p-3 border-b border-border">
+                <p className="text-sm font-medium">Advanced Filters</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Narrow down your shipment list
+                </p>
+              </div>
+              <div className="p-3 space-y-4">
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="h-3 w-3" />
+                    Date Range
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={filters.dateStart}
+                      onChange={(e) => updateFilter("dateStart", e.target.value)}
+                      className={inputClass}
+                    />
+                    <span className="text-xs text-muted-foreground shrink-0">to</span>
+                    <input
+                      type="date"
+                      value={filters.dateEnd}
+                      onChange={(e) => updateFilter("dateEnd", e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  {dateError && (
+                    <p className="text-xs text-destructive">{dateError}</p>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Driver Assignment */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <UserCheck className="h-3 w-3" />
+                    Driver Assignment
+                  </label>
+                  <div className="flex gap-1.5">
+                    {DRIVER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => updateFilter("driverAssignment", opt.id)}
+                        className={cn(
+                          "flex-1 px-2 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                          filters.driverAssignment === opt.id
+                            ? "bg-primary/10 border-primary/30 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground hover:bg-muted",
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              {advancedCount > 0 && (
+                <div className="p-3 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-7 text-xs text-muted-foreground"
+                    onClick={() => {
+                      onFiltersChange({
+                        ...filters,
+                        dateStart: "",
+                        dateEnd: "",
+                        driverAssignment: "all",
+                      });
+                    }}
+                  >
+                    Clear advanced filters
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {(advancedCount > 0 || filters.status !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAll}
+              className="h-8 px-2 text-xs text-muted-foreground"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Reset all
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Row 2: Status Pills */}
-      <div className="flex p-1.5 bg-card/30 backdrop-blur-xl border border-border/40 rounded-2xl gap-1 shadow-sm overflow-x-auto no-scrollbar max-w-full">
+      {/* Active Filter Badges */}
+      {advancedCount > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {filters.dateStart && (
+            <Badge variant="secondary" className="gap-1 pr-1 text-xs font-normal">
+              From: {formatDateShort(filters.dateStart)}
+              <button
+                onClick={() => clearFilter("dateStart")}
+                className="ml-0.5 h-3.5 w-3.5 rounded-full hover:bg-foreground/10 flex items-center justify-center"
+              >
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </Badge>
+          )}
+          {filters.dateEnd && (
+            <Badge variant="secondary" className="gap-1 pr-1 text-xs font-normal">
+              To: {formatDateShort(filters.dateEnd)}
+              <button
+                onClick={() => clearFilter("dateEnd")}
+                className="ml-0.5 h-3.5 w-3.5 rounded-full hover:bg-foreground/10 flex items-center justify-center"
+              >
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </Badge>
+          )}
+          {filters.driverAssignment !== "all" && (
+            <Badge variant="secondary" className="gap-1 pr-1 text-xs font-normal">
+              Driver: {filters.driverAssignment}
+              <button
+                onClick={() => clearFilter("driverAssignment")}
+                className="ml-0.5 h-3.5 w-3.5 rounded-full hover:bg-foreground/10 flex items-center justify-center"
+              >
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Mobile-only status tabs */}
+      <div className="flex sm:hidden items-center gap-0.5 overflow-x-auto no-scrollbar">
         {STATUS_OPTIONS.map((opt) => (
           <button
             key={opt.id}
             onClick={() => updateFilter("status", opt.id)}
             className={cn(
-              "px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300",
+              "px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
               filters.status === opt.id
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                : "text-muted-foreground hover:bg-background/50 hover:text-foreground",
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
             {opt.label}
           </button>
         ))}
       </div>
-
-      {/* Row 3: Date Range + Driver Assignment */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Date Range */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-            From
-          </label>
-          <input
-            type="date"
-            value={filters.dateStart}
-            onChange={(e) => updateFilter("dateStart", e.target.value)}
-            className="bg-card/30 border border-border/40 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-            To
-          </label>
-          <input
-            type="date"
-            value={filters.dateEnd}
-            onChange={(e) => updateFilter("dateEnd", e.target.value)}
-            className="bg-card/30 border border-border/40 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
-
-        {/* Driver Assignment */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-            Driver
-          </label>
-          <select
-            value={filters.driverAssignment}
-            onChange={(e) => updateFilter("driverAssignment", e.target.value)}
-            className="bg-card/30 border border-border/40 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            {DRIVER_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Validation Error */}
-      {dateError && (
-        <p className="text-sm text-destructive font-medium">{dateError}</p>
-      )}
     </div>
   );
 }
