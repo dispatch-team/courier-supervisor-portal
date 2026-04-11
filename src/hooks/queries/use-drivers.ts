@@ -9,7 +9,7 @@ export function useDrivers(courierCompanyId: number | undefined) {
 
   return useQuery({
     queryKey: ["drivers", courierCompanyId],
-    queryFn: () => api.get<Driver[]>(`couriers/${courierCompanyId}/drivers`),
+    queryFn: () => api.get<Driver[]>(`couriers/${courierCompanyId}/drivers/`),
     enabled: !!courierCompanyId,
   });
 }

@@ -21,6 +21,8 @@ export interface Driver {
   status: "active" | "inactive" | "pending";
   profile_picture_id: string | null;
   additional_documents_id: string | null;
+  rating_aggregate: number;
+  rating_count: number;
 }
 
 // ─── Shipment ────────────────────────────────────────────
@@ -52,10 +54,14 @@ export interface Shipment {
   assigned_driver_id: number | null;
   start_address: string;
   start_address_contact_name: string;
-  start_address_contact_phone: string;
+  start_address_phone_number: string;
+  start_address_additional_contact: string;
   end_address: string;
   end_address_contact_name: string;
-  end_address_contact_phone: string;
+  end_address_phone_number: string;
+  end_address_additional_contact: string;
+  rating: number;
+  webhook_url: string;
   delivered_at: string | null;
   assigned_to_courier_at: string | null;
   assigned_to_driver_at: string | null;
@@ -64,6 +70,7 @@ export interface Shipment {
   failed_at: string | null;
   returned_at: string | null;
   cancelled_at: string | null;
+  created_at: string;
 }
 
 export interface ShipmentListResponse {

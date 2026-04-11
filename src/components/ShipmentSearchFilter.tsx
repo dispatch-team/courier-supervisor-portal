@@ -22,7 +22,8 @@ export function ShipmentSearchFilter({
   const filters = [
     { id: "all", label: t("filters.all") },
     { id: "pending", label: t("filters.pending") },
-    { id: "in-transit", label: t("filters.inTransit") },
+    { id: "assigned_to_courier", label: "Assigned" },
+    { id: "in_transit", label: t("filters.inTransit") },
     { id: "delivered", label: t("filters.delivered") },
   ];
 

@@ -2,74 +2,79 @@
 
 import { useI18n } from "@/intl";
 import { cn } from "@/lib/utils";
-import { MoreHorizontal, MapPin, Truck, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { MoreHorizontal, Truck, CheckCircle2, AlertCircle, Clock, XCircle, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlassCard } from "./GlassCard";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-
-interface ShipmentItem {
-  id: string;
-  merchant: string;
-  merchantEmail: string;
-  route: string;
-  driver: string;
-  driverStatus: string;
-  status: string;
-  fee: string;
-  priority: "high" | "normal";
-}
+import type { Shipment, ShipmentStatus } from "@/types/api";
 
 interface ShipmentListRowProps {
-  shipment: ShipmentItem;
+  shipment: Shipment;
+}
+
+function formatStatus(status: ShipmentStatus): string {
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getStatusConfig(status: ShipmentStatus) {
+  switch (status) {
+    case "pending":
+      return {
+        icon: Clock,
+        class: "bg-amber-500/20 text-amber-500 border-amber-500/30",
+      };
+    case "assigned_to_courier":
+    case "assigned_to_driver":
+      return {
+        icon: Truck,
+        class: "bg-blue-500/20 text-blue-500 border-blue-500/30",
+      };
+    case "picked_up":
+    case "in_transit":
+      return {
+        icon: Truck,
+        class: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30",
+      };
+    case "delivered":
+      return {
+        icon: CheckCircle2,
+        class: "bg-green-500/20 text-green-500 border-green-500/30",
+      };
+    case "failed":
+      return {
+        icon: AlertCircle,
+        class: "bg-red-500/20 text-red-500 border-red-500/30",
+      };
+    case "returned":
+      return {
+        icon: RotateCcw,
+        class: "bg-orange-500/20 text-orange-500 border-orange-500/30",
+      };
+    case "cancelled":
+      return {
+        icon: XCircle,
+        class: "bg-muted-foreground/20 text-muted-foreground border-muted-foreground/30",
+      };
+  }
 }
 
 export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
   const t = useI18n("shipments");
-
-  const getStatusConfig = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "urgent":
-      case "high":
-        return { 
-          icon: AlertCircle, 
-          class: "bg-red-500/20 text-red-500 border-red-500/30",
-          label: t("status.urgent")
-        };
-      case "pending":
-        return { 
-          icon: Clock, 
-          class: "bg-amber-500/20 text-amber-500 border-amber-500/30",
-          label: t("status.pending")
-        };
-      case "in transit":
-      case "assigned":
-        return { 
-          icon: Truck, 
-          class: "bg-blue-500/20 text-blue-500 border-blue-500/30",
-          label: t("status.inTransit")
-        };
-      case "delivered":
-      case "success":
-        return { 
-          icon: CheckCircle2, 
-          class: "bg-green-500/20 text-green-500 border-green-500/30",
-          label: t("status.delivered")
-        };
-      default:
-        return { 
-          icon: Package2, 
-          class: "bg-muted-foreground/20 text-muted-foreground border-muted-foreground/30",
-          label: status
-        };
-    }
-  };
-
   const statusConfig = getStatusConfig(shipment.status);
   const StatusIcon = statusConfig.icon;
 
@@ -80,48 +85,58 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
       animate={{ opacity: 1, y: 0 }}
       className="group"
     >
-      <GlassCard 
+      <GlassCard
         className="p-4 md:p-6 mb-4 !rounded-3xl hover:bg-card/40 hover:border-primary/30 transition-all shadow-md active:scale-95"
         gradient={false}
       >
-        <div className="grid grid-cols-2 md:grid-cols-7 gap-4 items-center relative z-10 font-sans">
-          {/* ID & Priority */}
+        <div className="grid grid-cols-2 md:grid-cols-8 gap-4 items-center relative z-10 font-sans">
+          {/* Tracking Number */}
           <div className="md:col-span-1">
             <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
               {t("table.id")}
             </p>
             <p className="text-sm font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
-              {shipment.id}
+              {shipment.code}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 italic truncate">
+              {shipment.description}
             </p>
           </div>
 
-          {/* Merchant */}
+          {/* Recipient Name */}
           <div className="md:col-span-1">
             <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
-              {t("table.merchant")}
+              Recipient
             </p>
-            <p className="text-sm font-bold text-foreground truncate">{shipment.merchant}</p>
-            <p className="text-[10px] text-muted-foreground/60 truncate italic">{shipment.merchantEmail}</p>
+            <p className="text-sm font-bold text-foreground truncate">
+              {shipment.end_address_contact_name || "—"}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 truncate">
+              {shipment.end_address_phone_number || ""}
+            </p>
           </div>
 
-          {/* Route */}
+          {/* Pickup Address */}
           <div className="md:col-span-1">
             <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
-              {t("table.route")}
+              Pickup
             </p>
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-3 w-3 text-primary/70" />
-              <p className="text-sm font-medium text-foreground">{shipment.route}</p>
-            </div>
+            <p className="text-sm font-medium text-foreground truncate">
+              {shipment.start_address}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 truncate">
+              {shipment.start_address_contact_name}
+            </p>
           </div>
 
-          {/* Driver */}
+          {/* Delivery Address */}
           <div className="md:col-span-1">
             <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
-              {t("table.driver")}
+              Delivery
             </p>
-            <p className="text-sm font-bold text-foreground leading-tight">{shipment.driver}</p>
-            <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-tight">{shipment.driverStatus}</p>
+            <p className="text-sm font-medium text-foreground truncate">
+              {shipment.end_address}
+            </p>
           </div>
 
           {/* Status */}
@@ -134,17 +149,27 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
               statusConfig.class
             )}>
               <StatusIcon className="h-3 w-3" />
-              {statusConfig.label}
+              {formatStatus(shipment.status)}
             </div>
           </div>
 
-          {/* Fee */}
+          {/* Assigned Driver */}
           <div className="md:col-span-1">
             <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
-              {t("table.fee")}
+              {t("table.driver")}
             </p>
-            <p className="text-sm font-black text-primary font-mono tracking-tighter">
-              {shipment.fee}
+            <p className="text-sm font-bold text-foreground leading-tight">
+              {shipment.assigned_driver_id ? `Driver #${shipment.assigned_driver_id}` : "Unassigned"}
+            </p>
+          </div>
+
+          {/* Created Date */}
+          <div className="md:col-span-1">
+            <p className="md:hidden text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 opacity-60">
+              Created
+            </p>
+            <p className="text-sm font-medium text-foreground">
+              {formatDate(shipment.created_at)}
             </p>
           </div>
 
@@ -172,27 +197,5 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
         </div>
       </GlassCard>
     </motion.div>
-  );
-}
-
-// Fallback for missing icon in some UI libs
-function Package2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-      <path d="m3 9 2.45-4.91A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.09L21 9" />
-      <path d="M12 3v6" />
-    </svg>
   );
 }
