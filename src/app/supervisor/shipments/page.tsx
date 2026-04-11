@@ -3,11 +3,11 @@
 import { useI18n } from "@/intl";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShipmentSearchFilter } from "@/components/ShipmentSearchFilter";
+import { ShipmentSearchFilter, DEFAULT_FILTERS, type ShipmentFilterValues } from "@/components/ShipmentSearchFilter";
 import { ShipmentListRow } from "@/components/ShipmentListRow";
 import { Inbox, Loader2, AlertCircle, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useShipments } from "@/hooks/queries/use-shipments";
+import { useShipments, type ShipmentFilters } from "@/hooks/queries/use-shipments";
 import type { Shipment } from "@/types/api";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
@@ -47,18 +47,20 @@ const containerVariants = {
 export default function ShipmentsPage() {
   const t = useI18n("shipments");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filters, setFilters] = useState<ShipmentFilterValues>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  const statusParam = filterStatus === "all" ? undefined : filterStatus;
-  const { data, isLoading, error, refetch } = useShipments({
+  const queryFilters: ShipmentFilters = {
     page,
     page_size: pageSize,
-    status: statusParam,
-  });
+    status: filters.status !== "all" ? filters.status : undefined,
+    created_at_start: filters.dateStart ? `${filters.dateStart}T00:00:00Z` : undefined,
+    created_at_end: filters.dateEnd ? `${filters.dateEnd}T23:59:59Z` : undefined,
+  };
+  const { data, isLoading, isFetching, error, refetch } = useShipments(queryFilters);
 
   const shipments = data?.shipments ?? [];
   const totalCount = data?.total ?? 0;
@@ -66,6 +68,12 @@ export default function ShipmentsPage() {
 
   const processedShipments = useMemo(() => {
     let result = shipments;
+
+    if (filters.driverAssignment === "assigned") {
+      result = result.filter((s) => s.assigned_driver_id !== null && s.assigned_driver_id !== 0);
+    } else if (filters.driverAssignment === "unassigned") {
+      result = result.filter((s) => !s.assigned_driver_id);
+    }
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -79,7 +87,7 @@ export default function ShipmentsPage() {
     }
 
     return sortShipments(result, sortField, sortDir);
-  }, [shipments, searchTerm, sortField, sortDir]);
+  }, [shipments, searchTerm, sortField, sortDir, filters.driverAssignment]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -95,12 +103,12 @@ export default function ShipmentsPage() {
     setPage(1);
   };
 
-  const handleFilterChange = (status: string) => {
-    setFilterStatus(status);
+  const handleFiltersChange = (newFilters: ShipmentFilterValues) => {
+    setFilters(newFilters);
     setPage(1);
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -133,16 +141,21 @@ export default function ShipmentsPage() {
         <p className="text-muted-foreground font-medium text-lg italic">
           {t("subtitle")}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {totalCount} total shipments
-        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-sm text-muted-foreground">
+            {totalCount} total shipments
+          </p>
+          {isFetching && (
+            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+          )}
+        </div>
       </motion.div>
 
       {/* Controls */}
       <ShipmentSearchFilter
         onSearch={setSearchTerm}
-        onFilterChange={handleFilterChange}
-        currentFilter={filterStatus}
+        onFiltersChange={handleFiltersChange}
+        filters={filters}
       />
 
       {/* Column Headers with Sort */}
@@ -180,7 +193,7 @@ export default function ShipmentsPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        key={filterStatus + searchTerm + sortField + sortDir}
+        key={filters.status + filters.driverAssignment + searchTerm + sortField + sortDir}
         className="relative z-10"
       >
         <AnimatePresence mode="popLayout">
