@@ -7,6 +7,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ThemeConfigProvider } from "@/components/ThemeProvider";
 import { IntlProvider } from "@/intl/IntlProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import { QueryProvider } from "@/context/QueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +28,9 @@ export default function RootLayout({
         <ThemeConfigProvider>
           <IntlProvider>
             <AuthProvider>
-              {children}
+              <QueryProvider>
+                {children}
+              </QueryProvider>
             </AuthProvider>
           </IntlProvider>
         </ThemeConfigProvider>
