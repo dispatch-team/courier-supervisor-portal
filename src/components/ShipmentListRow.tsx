@@ -1,11 +1,13 @@
 "use client";
 
 import { useI18n } from "@/intl";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal, Truck, CheckCircle2, AlertCircle, Clock, XCircle, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlassCard } from "./GlassCard";
+import { AssignDriverDialog } from "./AssignDriverDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +79,7 @@ function getStatusConfig(status: ShipmentStatus) {
 export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
   const t = useI18n("shipments");
   const router = useRouter();
+  const [assignOpen, setAssignOpen] = useState(false);
   const statusConfig = getStatusConfig(shipment.status);
   const StatusIcon = statusConfig.icon;
 
@@ -85,6 +88,7 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
   };
 
   return (
+    <>
     <motion.div
       whileHover={{ y: -2, scale: 1.005 }}
       initial={{ opacity: 0, y: 10 }}
@@ -189,7 +193,10 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-card/90 backdrop-blur-xl border-border/40 p-1 rounded-2xl shadow-2xl">
-                <DropdownMenuItem className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-primary/20 hover:text-primary transition-all cursor-pointer">
+                <DropdownMenuItem
+                  className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-primary/20 hover:text-primary transition-all cursor-pointer"
+                  onClick={() => setAssignOpen(true)}
+                >
                   Assign Driver
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -207,5 +214,12 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
         </div>
       </GlassCard>
     </motion.div>
+
+    <AssignDriverDialog
+      shipment={shipment}
+      open={assignOpen}
+      onOpenChange={setAssignOpen}
+    />
+    </>
   );
 }
