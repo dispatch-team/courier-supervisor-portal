@@ -36,6 +36,8 @@ interface FormState {
   email: string;
   phone_number: string;
   password: string;
+  confirm_password: string;
+  password_mode: "generate" | "custom";
 }
 
 const EMPTY_FORM: FormState = {
@@ -45,7 +47,19 @@ const EMPTY_FORM: FormState = {
   email: "",
   phone_number: "",
   password: "",
+  confirm_password: "",
+  password_mode: "generate",
 };
+
+function validatePassword(password: string): string | null {
+  if (!password) return "Password is required";
+  if (password.length < 8) return "Must be at least 8 characters";
+  if (!/[A-Z]/.test(password)) return "Must include an uppercase letter";
+  if (!/[a-z]/.test(password)) return "Must include a lowercase letter";
+  if (!/[0-9]/.test(password)) return "Must include a number";
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) return "Must include a special character";
+  return null;
+}
 
 function validateForm(form: FormState): Record<string, string> {
   const errors: Record<string, string> = {};
@@ -56,8 +70,14 @@ function validateForm(form: FormState): Record<string, string> {
   if (!form.phone_number.trim()) errors.phone_number = "Phone number is required";
   else if (!/^\+?\d{9,15}$/.test(form.phone_number.replace(/\s/g, "")))
     errors.phone_number = "Invalid phone format (e.g. +251911234567)";
-  if (!form.password) errors.password = "Password is required";
-  else if (form.password.length < 8) errors.password = "Minimum 8 characters";
+
+  const pwError = validatePassword(form.password);
+  if (pwError) errors.password = pwError;
+
+  if (form.password_mode === "custom" && form.password && form.confirm_password !== form.password) {
+    errors.confirm_password = "Passwords do not match";
+  }
+
   return errors;
 }
 
@@ -209,37 +229,99 @@ export function CreateDriverDialog({
                 />
               </div>
 
-              {/* Password */}
-              <div className="space-y-1.5">
+              {/* Password Mode Toggle */}
+              <div className="space-y-3">
                 <label className="text-xs font-medium text-muted-foreground">Password *</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
+                <div className="flex gap-1 p-0.5 bg-muted/30 rounded-md w-fit">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField("password_mode", "generate");
+                      const pw = generatePassword();
+                      updateField("password", pw);
+                      updateField("confirm_password", "");
+                      setShowPassword(true);
+                    }}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                      form.password_mode === "generate"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Auto-generate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField("password_mode", "custom");
+                      updateField("password", "");
+                      updateField("confirm_password", "");
+                      setShowPassword(false);
+                    }}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                      form.password_mode === "custom"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Set custom
+                  </button>
+                </div>
+
+                {form.password_mode === "generate" ? (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={form.password}
+                        readOnly
+                        className={`${inputClass} font-mono bg-muted/30`}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-9 gap-1.5 text-xs shrink-0"
+                      onClick={handleGenerate}
+                    >
+                      <Shuffle className="h-3 w-3" />
+                      Regenerate
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={form.password}
+                        onChange={(e) => updateField("password", e.target.value)}
+                        placeholder="Enter password"
+                        className={inputClass}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
                     <input
                       type={showPassword ? "text" : "password"}
-                      value={form.password}
-                      onChange={(e) => updateField("password", e.target.value)}
-                      placeholder="Minimum 8 characters"
+                      value={form.confirm_password}
+                      onChange={(e) => updateField("confirm_password", e.target.value)}
+                      placeholder="Confirm password"
                       className={inputClass}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
+                    {errors.confirm_password && (
+                      <p className="text-xs text-destructive">{errors.confirm_password}</p>
+                    )}
+                    <p className="text-[11px] text-muted-foreground">
+                      Min 8 chars, uppercase, lowercase, number, special character
+                    </p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-9 gap-1.5 text-xs shrink-0"
-                    onClick={handleGenerate}
-                  >
-                    <Shuffle className="h-3 w-3" />
-                    Generate
-                  </Button>
-                </div>
+                )}
                 {errors.password && (
                   <p className="text-xs text-destructive">{errors.password}</p>
                 )}
