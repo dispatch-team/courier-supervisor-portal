@@ -236,10 +236,8 @@ export function CreateDriverDialog({
                   <button
                     type="button"
                     onClick={() => {
-                      updateField("password_mode", "generate");
                       const pw = generatePassword();
-                      updateField("password", pw);
-                      updateField("confirm_password", "");
+                      setForm((prev) => ({ ...prev, password_mode: "generate" as const, password: pw, confirm_password: "" }));
                       setShowPassword(true);
                     }}
                     className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
@@ -253,9 +251,7 @@ export function CreateDriverDialog({
                   <button
                     type="button"
                     onClick={() => {
-                      updateField("password_mode", "custom");
-                      updateField("password", "");
-                      updateField("confirm_password", "");
+                      setForm((prev) => ({ ...prev, password_mode: "custom" as const, password: "", confirm_password: "" }));
                       setShowPassword(false);
                     }}
                     className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
