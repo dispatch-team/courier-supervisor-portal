@@ -2,7 +2,7 @@
 
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useApi } from "@/hooks/use-api";
-import type { ShipmentListResponse, Shipment } from "@/types/api";
+import type { ShipmentListResponse, ShipmentDetail } from "@/types/api";
 
 export interface ShipmentFilters {
   page?: number;
@@ -41,7 +41,7 @@ export function useShipment(code: string) {
 
   return useQuery({
     queryKey: ["shipment", code],
-    queryFn: () => api.get<Shipment>(`shipments/${code}`),
+    queryFn: () => api.get<ShipmentDetail>(`shipments/${code}`),
     enabled: !!code,
   });
 }

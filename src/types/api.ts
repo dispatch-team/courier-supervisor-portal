@@ -73,6 +73,22 @@ export interface Shipment {
   created_at: string;
 }
 
+// Detail response includes nested merchant, courier, driver objects
+export interface ShipmentMerchant {
+  id: number;
+  company_name: string;
+  company_address: string;
+  phone_number: string;
+  email: string;
+  website_url: string;
+}
+
+export interface ShipmentDetail extends Shipment {
+  merchant: ShipmentMerchant | null;
+  courier_company: CourierCompany | null;
+  assigned_driver: Driver | null;
+}
+
 export interface ShipmentListResponse {
   total: number;
   page: number;

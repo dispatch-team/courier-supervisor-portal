@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/intl";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { MoreHorizontal, Truck, CheckCircle2, AlertCircle, Clock, XCircle, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlassCard } from "./GlassCard";
@@ -75,15 +76,21 @@ function getStatusConfig(status: ShipmentStatus) {
 
 export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
   const t = useI18n("shipments");
+  const router = useRouter();
   const statusConfig = getStatusConfig(shipment.status);
   const StatusIcon = statusConfig.icon;
+
+  const handleRowClick = () => {
+    router.push(`/supervisor/shipments/${shipment.code}`);
+  };
 
   return (
     <motion.div
       whileHover={{ y: -2, scale: 1.005 }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group"
+      className="group cursor-pointer"
+      onClick={handleRowClick}
     >
       <GlassCard
         className="p-4 md:p-6 mb-4 !rounded-3xl hover:bg-card/40 hover:border-primary/30 transition-all shadow-md active:scale-95"
@@ -174,7 +181,7 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
           </div>
 
           {/* Actions */}
-          <div className="md:col-span-1 flex justify-end">
+          <div className="md:col-span-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-10 w-10 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-all">
@@ -185,7 +192,10 @@ export function ShipmentListRow({ shipment }: ShipmentListRowProps) {
                 <DropdownMenuItem className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-primary/20 hover:text-primary transition-all cursor-pointer">
                   Assign Driver
                 </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-primary/20 hover:text-primary transition-all cursor-pointer">
+                <DropdownMenuItem
+                  className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-primary/20 hover:text-primary transition-all cursor-pointer"
+                  onClick={handleRowClick}
+                >
                   View Details
                 </DropdownMenuItem>
                 <DropdownMenuItem className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-primary/20 hover:text-primary transition-all cursor-pointer text-red-500 hover:text-red-600">
