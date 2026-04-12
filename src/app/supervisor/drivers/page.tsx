@@ -30,6 +30,8 @@ import {
 import { CreateDriverDialog } from "@/components/CreateDriverDialog";
 import { EditDriverDialog } from "@/components/EditDriverDialog";
 import { DriverAvatar } from "@/components/DriverAvatar";
+import { DeactivateDriverDialog } from "@/components/DeactivateDriverDialog";
+import { ReactivateDriverDialog } from "@/components/ReactivateDriverDialog";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { cn } from "@/lib/utils";
@@ -68,6 +70,8 @@ export default function DriversPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editDriver, setEditDriver] = useState<Driver | null>(null);
+  const [deactivateDriver, setDeactivateDriver] = useState<Driver | null>(null);
+  const [reactivateDriver, setReactivateDriver] = useState<Driver | null>(null);
 
   const isLoading = companyLoading || driversLoading;
 
@@ -275,9 +279,20 @@ export default function DriversPage() {
                       <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem onClick={() => setEditDriver(driver)}>Edit Driver</DropdownMenuItem>
                         <DropdownMenuItem>View Performance</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          {driver.status === "active" ? "Deactivate" : "Activate"}
-                        </DropdownMenuItem>
+                        {driver.status === "active" ? (
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setDeactivateDriver(driver)}
+                          >
+                            Deactivate
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => setReactivateDriver(driver)}
+                          >
+                            Activate
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -299,6 +314,16 @@ export default function DriversPage() {
         courierCompanyId={companyId}
         open={!!editDriver}
         onOpenChange={(open) => { if (!open) setEditDriver(null); }}
+      />
+      <DeactivateDriverDialog
+        driver={deactivateDriver}
+        open={!!deactivateDriver}
+        onOpenChange={(open) => { if (!open) setDeactivateDriver(null); }}
+      />
+      <ReactivateDriverDialog
+        driver={reactivateDriver}
+        open={!!reactivateDriver}
+        onOpenChange={(open) => { if (!open) setReactivateDriver(null); }}
       />
     </div>
   );
