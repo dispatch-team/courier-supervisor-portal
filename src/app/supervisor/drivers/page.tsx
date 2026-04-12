@@ -28,6 +28,7 @@ import {
   Star,
 } from "lucide-react";
 import { CreateDriverDialog } from "@/components/CreateDriverDialog";
+import { EditDriverDialog } from "@/components/EditDriverDialog";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ export default function DriversPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
+  const [editDriver, setEditDriver] = useState<Driver | null>(null);
 
   const isLoading = companyLoading || driversLoading;
 
@@ -268,7 +270,7 @@ export default function DriversPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem>Edit Driver</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditDriver(driver)}>Edit Driver</DropdownMenuItem>
                         <DropdownMenuItem>View Performance</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
                           {driver.status === "active" ? "Deactivate" : "Activate"}
@@ -283,11 +285,17 @@ export default function DriversPage() {
         </Table>
       </div>
 
-      {/* Create Driver Dialog */}
+      {/* Dialogs */}
       <CreateDriverDialog
         courierCompanyId={companyId}
         open={createOpen}
         onOpenChange={setCreateOpen}
+      />
+      <EditDriverDialog
+        driver={editDriver}
+        courierCompanyId={companyId}
+        open={!!editDriver}
+        onOpenChange={(open) => { if (!open) setEditDriver(null); }}
       />
     </div>
   );
