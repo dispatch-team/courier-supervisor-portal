@@ -25,16 +25,19 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    init.body = await request.text();
+    init.body = await request.arrayBuffer();
   }
 
   try {
     const res = await fetch(url.toString(), init);
-    const data = await res.text();
+    const contentType = res.headers.get("Content-Type") ?? "application/json";
+    const isJson = contentType.includes("application/json") || contentType.includes("text/");
 
-    return new NextResponse(data, {
+    const body = isJson ? await res.text() : await res.arrayBuffer();
+
+    return new NextResponse(body, {
       status: res.status,
-      headers: { "Content-Type": res.headers.get("Content-Type") ?? "application/json" },
+      headers: { "Content-Type": contentType },
     });
   } catch {
     return NextResponse.json(

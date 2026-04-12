@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { CreateDriverDialog } from "@/components/CreateDriverDialog";
 import { EditDriverDialog } from "@/components/EditDriverDialog";
+import { DriverAvatar } from "@/components/DriverAvatar";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { cn } from "@/lib/utils";
@@ -223,9 +224,11 @@ export default function DriversPage() {
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                        {driver.first_name[0]}{driver.last_name[0]}
-                      </div>
+                      <DriverAvatar
+                        driverId={driver.id}
+                        profilePictureId={driver.profile_picture_id}
+                        initials={`${driver.first_name[0]}${driver.last_name[0]}`}
+                      />
                       <div>
                         <p className="text-sm font-medium group-hover/row:text-primary transition-colors">
                           {driverName(driver)}

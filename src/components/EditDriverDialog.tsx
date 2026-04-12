@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, Upload, X } from "lucide-react";
 import { useUpdateDriver } from "@/hooks/queries/use-update-driver";
+import { DriverAvatar } from "@/components/DriverAvatar";
 import type { Driver } from "@/types/api";
 
 interface EditDriverDialogProps {
@@ -105,8 +106,9 @@ export function EditDriverDialog({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, photo: "Only image files are allowed" }));
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setErrors((prev) => ({ ...prev, photo: "Only JPEG, PNG, or WebP images are allowed" }));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -221,16 +223,26 @@ export function EditDriverDialog({
                     </Button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors w-full"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    Upload photo
-                  </button>
+                  <div className="flex items-center gap-3">
+                    {driver.profile_picture_id && (
+                      <DriverAvatar
+                        driverId={driver.id}
+                        profilePictureId={driver.profile_picture_id}
+                        initials={`${driver.first_name[0]}${driver.last_name[0]}`}
+                        size="md"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex-1"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      {driver.profile_picture_id ? "Change photo" : "Upload photo"}
+                    </button>
+                  </div>
                 )}
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+                <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileSelect} className="hidden" />
                 {errors.photo && <p className="text-xs text-destructive">{errors.photo}</p>}
               </div>
 
