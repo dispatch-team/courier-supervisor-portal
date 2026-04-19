@@ -3,18 +3,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Package, 
-  Users, 
-  Map as MapIcon, 
-  CircleDollarSign, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  Map as MapIcon,
+  CircleDollarSign,
+  FileText,
   LogOut,
   ChevronLeft,
   ChevronRight,
   Settings,
-  User as UserIcon
+  User as UserIcon,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { label: "Dashboard", href: "/supervisor", icon: LayoutDashboard },
   { label: "Shipments", href: "/supervisor/shipments", icon: Package },
   { label: "Drivers", href: "/supervisor/drivers", icon: Users },
+  { label: "Fleet", href: "/supervisor/fleet", icon: Activity },
   { label: "Fleet Map", href: "/supervisor/fleet-map", icon: MapIcon },
   { label: "Revenue", href: "/supervisor/revenue", icon: CircleDollarSign },
   { label: "Reports", href: "/supervisor/reports", icon: FileText },
