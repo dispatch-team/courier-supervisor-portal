@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,8 @@ import {
   MoreHorizontal,
   Search,
   Star,
+  GitCompare,
+  X,
 } from "lucide-react";
 import { CreateDriverDialog } from "@/components/CreateDriverDialog";
 import { EditDriverDialog } from "@/components/EditDriverDialog";
@@ -76,6 +79,7 @@ export default function DriversPage() {
   const [deactivateDriver, setDeactivateDriver] = useState<Driver | null>(null);
   const [reactivateDriver, setReactivateDriver] = useState<Driver | null>(null);
   const [deleteDriver, setDeleteDriver] = useState<Driver | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const isLoading = companyLoading || driversLoading;
 
@@ -187,6 +191,22 @@ export default function DriversPage() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent bg-muted/30 border-border/50">
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={
+                    filteredDrivers.length > 0 &&
+                    filteredDrivers.every((d) => selectedIds.has(d.id))
+                  }
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedIds(new Set(filteredDrivers.map((d) => d.id)));
+                    } else {
+                      setSelectedIds(new Set());
+                    }
+                  }}
+                  aria-label="Select all drivers"
+                />
+              </TableHead>
               <TableHead>Driver</TableHead>
               <TableHead className="hidden md:table-cell">Phone</TableHead>
               <TableHead className="hidden lg:table-cell">Email</TableHead>
@@ -198,7 +218,7 @@ export default function DriversPage() {
           <TableBody>
             {filteredDrivers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center">
+                <TableCell colSpan={7} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <UserX className="h-8 w-8 text-muted-foreground/50" />
                     <p className="text-muted-foreground">
@@ -221,15 +241,33 @@ export default function DriversPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredDrivers.map((driver) => (
+              filteredDrivers.map((driver) => {
+                const isSelected = selectedIds.has(driver.id);
+                return (
                 <TableRow
                   key={driver.id}
+                  data-state={isSelected ? "selected" : undefined}
                   className={cn(
                     "group/row transition-all duration-150",
                     "hover:bg-primary/[0.04] hover:shadow-[inset_2px_0_0_0_hsl(var(--primary))]",
+                    "data-[state=selected]:bg-primary/[0.06]",
                     "animate-in fade-in-50 slide-in-from-bottom-1 duration-300",
                   )}
                 >
+                  <TableCell>
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) => {
+                        setSelectedIds((prev) => {
+                          const next = new Set(prev);
+                          if (checked) next.add(driver.id);
+                          else next.delete(driver.id);
+                          return next;
+                        });
+                      }}
+                      aria-label={`Select driver ${driver.first_name} ${driver.last_name}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <DriverAvatar
@@ -311,7 +349,8 @@ export default function DriversPage() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -344,6 +383,43 @@ export default function DriversPage() {
         open={!!deleteDriver}
         onOpenChange={(open) => { if (!open) setDeleteDriver(null); }}
       />
+
+      {/* Floating selection bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-200">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-card border border-border shadow-2xl shadow-black/20 backdrop-blur-lg">
+            <div className="flex items-center gap-2">
+              <div className="h-6 min-w-6 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center px-1.5">
+                {selectedIds.size}
+              </div>
+              <span className="text-sm font-medium text-foreground">selected</span>
+            </div>
+            <div className="w-px h-5 bg-border" />
+            <Button
+              size="sm"
+              onClick={() =>
+                router.push(
+                  `/supervisor/drivers/compare?ids=${Array.from(selectedIds).join(",")}`,
+                )
+              }
+              disabled={selectedIds.size < 2}
+              className="gap-1.5 h-7 text-xs"
+            >
+              <GitCompare className="h-3 w-3" />
+              Compare ({selectedIds.size})
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedIds(new Set())}
+              className="h-7 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Clear
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
