@@ -13,6 +13,9 @@ import {
   TrendingUp,
   Star,
   BarChart3,
+  Download,
+  FileText,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   AreaChart,
@@ -42,6 +45,13 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { DriverAvatar } from "@/components/DriverAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportDriverReportPdf, exportDriverReportExcel } from "@/lib/driver-report";
 import { useDriver } from "@/hooks/queries/use-drivers";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
@@ -106,6 +116,7 @@ export default function DriverPerformancePage({
   const [preset, setPreset] = useState<RangePreset>("30d");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [exporting, setExporting] = useState<"pdf" | "excel" | null>(null);
 
   const { companyId } = useCompanyId();
   const { data: driver, isLoading: driverLoading } = useDriver(companyId, driverId);
@@ -130,6 +141,18 @@ export default function DriverPerformancePage({
   }, [shipmentData, start, end]);
 
   const isLoading = driverLoading || shipmentsLoading;
+
+  const handleExport = async (format: "pdf" | "excel") => {
+    if (!driver || !metrics) return;
+    setExporting(format);
+    try {
+      const ctx = { driver, metrics, rangeStart: start, rangeEnd: end };
+      if (format === "pdf") await exportDriverReportPdf(ctx);
+      else await exportDriverReportExcel(ctx);
+    } finally {
+      setExporting(null);
+    }
+  };
 
   if (isLoading && !driver) {
     return (
@@ -210,35 +233,71 @@ export default function DriverPerformancePage({
           </div>
         </div>
 
-        <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5 self-start">
-          {PRESETS.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => {
-                setPreset(p.id);
-                setCustomRange(undefined);
+        <div className="flex items-center gap-2 self-start">
+          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5">
+            {PRESETS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  setPreset(p.id);
+                  setCustomRange(undefined);
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  preset === p.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+            <CustomRangePicker
+              preset={preset}
+              customRange={customRange}
+              open={pickerOpen}
+              onOpenChange={setPickerOpen}
+              onApply={(range) => {
+                setCustomRange(range);
+                setPreset("custom");
+                setPickerOpen(false);
               }}
-              className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                preset === p.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
-          <CustomRangePicker
-            preset={preset}
-            customRange={customRange}
-            open={pickerOpen}
-            onOpenChange={setPickerOpen}
-            onApply={(range) => {
-              setCustomRange(range);
-              setPreset("custom");
-              setPickerOpen(false);
-            }}
-          />
+            />
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasData || exporting !== null}
+                className="gap-1.5"
+              >
+                {exporting !== null ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => handleExport("pdf")} className="gap-2">
+                <FileText className="h-4 w-4" />
+                <div className="flex flex-col">
+                  <span className="text-sm">PDF Report</span>
+                  <span className="text-[10px] text-muted-foreground">Formatted document</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("excel")} className="gap-2">
+                <FileSpreadsheet className="h-4 w-4" />
+                <div className="flex flex-col">
+                  <span className="text-sm">Excel Workbook</span>
+                  <span className="text-[10px] text-muted-foreground">Editable spreadsheet</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
