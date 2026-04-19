@@ -25,7 +25,8 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    init.body = await request.arrayBuffer();
+    const buf = await request.arrayBuffer();
+    init.body = Buffer.from(buf);
   }
 
   try {
@@ -39,7 +40,8 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       status: res.status,
       headers: { "Content-Type": contentType },
     });
-  } catch {
+  } catch (err) {
+    console.error("Proxy error:", err);
     return NextResponse.json(
       { error: "network_error", message: "Unable to reach backend" },
       { status: 502 },
