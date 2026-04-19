@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/intl";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -32,6 +33,7 @@ import { EditDriverDialog } from "@/components/EditDriverDialog";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { DeactivateDriverDialog } from "@/components/DeactivateDriverDialog";
 import { ReactivateDriverDialog } from "@/components/ReactivateDriverDialog";
+import { DeleteDriverDialog } from "@/components/DeleteDriverDialog";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { cn } from "@/lib/utils";
@@ -64,6 +66,7 @@ const inputClass =
 
 export default function DriversPage() {
   const t = useI18n("drivers");
+  const router = useRouter();
   const { companyId, isLoading: companyLoading } = useCompanyId();
   const { data: drivers, isLoading: driversLoading, error, refetch } = useDrivers(companyId);
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +75,7 @@ export default function DriversPage() {
   const [editDriver, setEditDriver] = useState<Driver | null>(null);
   const [deactivateDriver, setDeactivateDriver] = useState<Driver | null>(null);
   const [reactivateDriver, setReactivateDriver] = useState<Driver | null>(null);
+  const [deleteDriver, setDeleteDriver] = useState<Driver | null>(null);
 
   const isLoading = companyLoading || driversLoading;
 
@@ -278,7 +282,11 @@ export default function DriversPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem onClick={() => setEditDriver(driver)}>Edit Driver</DropdownMenuItem>
-                        <DropdownMenuItem>View Performance</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/supervisor/drivers/${driver.id}/performance`)}
+                        >
+                          View Performance
+                        </DropdownMenuItem>
                         {driver.status === "active" ? (
                           <DropdownMenuItem
                             className="text-destructive"
@@ -293,6 +301,12 @@ export default function DriversPage() {
                             Activate
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeleteDriver(driver)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -324,6 +338,11 @@ export default function DriversPage() {
         driver={reactivateDriver}
         open={!!reactivateDriver}
         onOpenChange={(open) => { if (!open) setReactivateDriver(null); }}
+      />
+      <DeleteDriverDialog
+        driver={deleteDriver}
+        open={!!deleteDriver}
+        onOpenChange={(open) => { if (!open) setDeleteDriver(null); }}
       />
     </div>
   );
