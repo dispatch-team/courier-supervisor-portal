@@ -1,209 +1,434 @@
 "use client";
 
-import { useI18n } from "@/intl";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { DashboardStatsCard } from "@/components/DashboardStatsCard";
-import { DriverStatusCard } from "@/components/DriverStatusCard";
-import { AssignmentsTable } from "@/components/AssignmentsTable";
-import { PerformanceChart } from "@/components/PerformanceChart";
+import { useCompanyId } from "@/hooks/queries/use-company-id";
+import { useDrivers } from "@/hooks/queries/use-drivers";
+import { useShipments } from "@/hooks/queries/use-shipments";
+import { computeFleetMetrics } from "@/lib/fleet-metrics";
+import { formatEtb } from "@/lib/revenue-metrics";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/GlassCard";
-import { 
-  Plus, 
-  Bell, 
-  User, 
-  History as HistoryIcon, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle2, 
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
   RefreshCcw,
-  PlusCircle,
-  Truck
+  Package,
+  Clock,
+  Truck,
+  CheckCircle2,
+  Wallet,
+  Users,
+  ArrowRight,
+  AlertCircle,
 } from "lucide-react";
-import { motion, Variants } from "framer-motion";
-import dispatchLogo from "@/assets/dispatch-logo.png";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Shipment } from "@/types/api";
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
-};
+function isToday(iso: string | null): boolean {
+  if (!iso) return false;
+  const d = new Date(iso);
+  const today = startOfToday();
+  return d >= today;
+}
+
+const IN_PROGRESS_STATUSES: Shipment["status"][] = [
+  "assigned_to_driver",
+  "picked_up",
+  "in_transit",
+];
 
 export default function SupervisorDashboard() {
-  const t = useI18n("supervisorDashboard");
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { companyId, isLoading: companyLoading } = useCompanyId();
 
-  const refreshDashboard = () => {
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1000);
+  // Today's shipments (created/active today)
+  const { data: drivers, isLoading: driversLoading } = useDrivers(companyId);
+  const { data: shipmentData, isLoading: shipmentsLoading, isFetching, refetch } = useShipments({
+    page_size: 100,
+  });
+
+  const isLoading = companyLoading || driversLoading || shipmentsLoading;
+
+  const stats = useMemo(() => {
+    if (!shipmentData?.shipments || !drivers) return null;
+    const all = shipmentData.shipments;
+
+    const pending = all.filter((s) => s.status === "pending").length;
+    const unassigned = all.filter((s) => s.status === "assigned_to_courier" && !s.assigned_driver_id).length;
+    const inProgress = all.filter((s) => IN_PROGRESS_STATUSES.includes(s.status)).length;
+    const deliveredToday = all.filter((s) => s.status === "delivered" && isToday(s.delivered_at)).length;
+    const failedToday = all.filter((s) => s.status === "failed" && isToday(s.failed_at)).length;
+    const revenueToday = all
+      .filter((s) => s.status === "delivered" && isToday(s.delivered_at))
+      .reduce((sum, s) => sum + (s.total_fee ?? 0), 0);
+
+    const fleet = computeFleetMetrics(drivers, all);
+
+    return {
+      pending,
+      unassigned,
+      inProgress,
+      deliveredToday,
+      failedToday,
+      revenueToday,
+      activeDrivers: fleet.totalActiveDrivers,
+      onDelivery: fleet.onDelivery,
+      idle: fleet.idle,
+      utilizationRate: fleet.utilizationRate,
+    };
+  }, [shipmentData, drivers]);
+
+  // Action items: unassigned shipments + pending shipments
+  const actionItems = useMemo(() => {
+    if (!shipmentData?.shipments) return [];
+    return shipmentData.shipments
+      .filter(
+        (s) =>
+          s.status === "pending" ||
+          (s.status === "assigned_to_courier" && !s.assigned_driver_id),
+      )
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5);
+  }, [shipmentData]);
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["shipments"] });
+    queryClient.invalidateQueries({ queryKey: ["drivers"] });
+    refetch();
   };
 
-  // Mock data for the dashboard
-  const stats = [
-    { 
-      title: t("pendingAssignments"), 
-      value: "14", 
-      change: "Action needed",
-      changeType: "warning" as const,
-      icon: Clock 
-    },
-    { 
-      title: t("inTransit"), 
-      value: "28", 
-      change: "On track",
-      changeType: "positive" as const,
-      icon: TrendingUp 
-    },
-    { 
-      title: t("completedToday"), 
-      value: "42", 
-      change: "+12% vs yesterday",
-      changeType: "positive" as const,
-      icon: CheckCircle2 
-    },
-    { 
-      title: t("revenueToday"), 
-      value: "ETB 8.5k", 
-      change: "Steady",
-      changeType: "neutral" as const,
-      icon: HistoryIcon 
-    },
-  ];
-
-  const drivers = [
-    { name: "Abebe Kebede", status: "Active", deliveriesToday: 12 },
-    { name: "Sara Mohammed", status: "In Transit", deliveriesToday: 8 },
-    { name: "Dawit Girma", status: "Active", deliveriesToday: 15 },
-  ];
-
-  const assignments = [
-    { id: "SHIP-0024", merchant: "Lorum Ipsum Shop", destination: "Bole, Addis Ababa", status: "Urgent" },
-    { id: "SHIP-0025", merchant: "Market Hub Ltd", destination: "Piassa, Addis Ababa", status: "Pending" },
-    { id: "SHIP-0026", merchant: "Fresh Foods", destination: "Kazanchis", status: "Pending" },
-  ];
-
-  const performance = [
-    { label: t("deliveryRate"), value: 85 },
-    { label: t("driverUtilization"), value: 65 },
-    { label: t("rating"), value: 92 },
-  ];
+  if (isLoading && !stats) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="space-y-10"
-    >
-      {/* Header Section (High-Fidelity) */}
-      <GlassCard 
-        variants={itemVariants} 
-        className="bg-card/40 p-8 lg:p-10 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.4)]"
-        gradient={false}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 pointer-events-none" />
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 mb-4 border border-primary/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                Live Fleet Overview
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Welcome back, {user?.given_name || user?.preferred_username || "Supervisor"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Today&apos;s operations at a glance
+          </p>
+        </div>
+        <div className="flex items-center gap-2 self-start">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isFetching}
+            className="gap-1.5"
+          >
+            <RefreshCcw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+            Refresh
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => router.push("/supervisor/shipments")}
+            className="gap-1.5"
+          >
+            <Package className="h-3.5 w-3.5" />
+            View Shipments
+          </Button>
+        </div>
+      </div>
+
+      {/* Action items banner — only when there are pending/unassigned items */}
+      {stats && (stats.pending > 0 || stats.unassigned > 0) && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="h-10 w-10 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                Attention needed
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {stats.unassigned > 0 && (
+                  <>
+                    <span className="font-medium text-foreground">{stats.unassigned}</span> shipment
+                    {stats.unassigned > 1 ? "s" : ""} awaiting driver assignment
+                  </>
+                )}
+                {stats.unassigned > 0 && stats.pending > 0 && " • "}
+                {stats.pending > 0 && (
+                  <>
+                    <span className="font-medium text-foreground">{stats.pending}</span> pending shipment
+                    {stats.pending > 1 ? "s" : ""}
+                  </>
+                )}
               </p>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="h-16 w-16 rounded-3xl bg-background/50 border border-white/10 flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0">
-                <img
-                  src={dispatchLogo.src}
-                  alt="Dispatch"
-                  className="h-10 w-10 object-contain drop-shadow-md"
-                />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                  Welcome back, {user?.name || user?.preferred_username || "Supervisor"} 
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground mt-1 font-medium italic">
-                  Dispatching for Addis Ababa Courier Network.
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => router.push("/supervisor/shipments?status=assigned_to_courier")}
+              className="gap-1.5 shrink-0"
+            >
+              Review
+              <ArrowRight className="h-3 w-3" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard
+          icon={Clock}
+          tone="amber"
+          label="Pending"
+          value={stats?.unassigned ?? 0}
+          sub="awaiting assignment"
+          onClick={() => router.push("/supervisor/shipments?status=assigned_to_courier")}
+        />
+        <StatCard
+          icon={Truck}
+          tone="blue"
+          label="In Progress"
+          value={stats?.inProgress ?? 0}
+          sub="on the road"
+          onClick={() => router.push("/supervisor/shipments?status=in_transit")}
+        />
+        <StatCard
+          icon={CheckCircle2}
+          tone="green"
+          label="Delivered Today"
+          value={stats?.deliveredToday ?? 0}
+          sub={
+            stats && stats.failedToday > 0
+              ? `${stats.failedToday} failed today`
+              : "no failures today"
+          }
+        />
+        <StatCard
+          icon={Wallet}
+          tone="primary"
+          label="Revenue Today"
+          value={formatEtb(stats?.revenueToday ?? 0)}
+          sub="from completed deliveries"
+          onClick={() => router.push("/supervisor/revenue")}
+        />
+      </div>
+
+      {/* Two-column section: action items + driver status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Action items list */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-baseline justify-between">
+              <CardTitle className="text-base">Action Items</CardTitle>
+              <button
+                onClick={() => router.push("/supervisor/shipments")}
+                className="text-xs text-primary hover:underline"
+              >
+                View all shipments →
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {actionItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-500" />
+                </div>
+                <p className="text-sm font-medium">All caught up</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  No pending or unassigned shipments
                 </p>
               </div>
+            ) : (
+              <div className="space-y-2">
+                {actionItems.map((s) => (
+                  <button
+                    key={s.code}
+                    onClick={() => router.push(`/supervisor/shipments/${s.code}`)}
+                    className="w-full flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/40 transition-colors text-left group/row"
+                  >
+                    <div className="h-8 w-8 rounded-md bg-amber-500/10 flex items-center justify-center shrink-0">
+                      <Package className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate group-hover/row:text-primary transition-colors">
+                        {s.code}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {s.description || "No description"}
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] capitalize shrink-0",
+                        s.status === "pending" &&
+                          "border-amber-500/30 bg-amber-500/10 text-amber-500",
+                        s.status === "assigned_to_courier" &&
+                          "border-blue-500/30 bg-blue-500/10 text-blue-500",
+                      )}
+                    >
+                      {s.status.replace(/_/g, " ")}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Driver availability */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-baseline justify-between">
+              <CardTitle className="text-base">Fleet Status</CardTitle>
+              <button
+                onClick={() => router.push("/supervisor/fleet")}
+                className="text-xs text-primary hover:underline"
+              >
+                Details →
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <FleetRow
+              icon={Users}
+              tone="primary"
+              label="Active"
+              value={stats?.activeDrivers ?? 0}
+              sub="in fleet"
+            />
+            <FleetRow
+              icon={Truck}
+              tone="blue"
+              label="On Delivery"
+              value={stats?.onDelivery ?? 0}
+              sub={
+                stats && stats.activeDrivers > 0
+                  ? `${(stats.utilizationRate * 100).toFixed(0)}% utilization`
+                  : "—"
+              }
+            />
+            <FleetRow
+              icon={CheckCircle2}
+              tone="green"
+              label="Idle / Available"
+              value={stats?.idle ?? 0}
+              sub="ready for assignments"
+            />
+
+            {/* Quick driver shortcut */}
+            <div className="pt-2 border-t border-border/50 mt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-1.5"
+                onClick={() => router.push("/supervisor/drivers")}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Manage Drivers
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  tone,
+  label,
+  value,
+  sub,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  tone: "amber" | "blue" | "green" | "primary";
+  label: string;
+  value: number | string;
+  sub: string;
+  onClick?: () => void;
+}) {
+  const toneClass = {
+    amber: "bg-amber-500/10 text-amber-500",
+    blue: "bg-blue-500/10 text-blue-500",
+    green: "bg-green-500/10 text-green-500",
+    primary: "bg-primary/10 text-primary",
+  }[tone];
+
+  const Wrapper = onClick ? "button" : "div";
+
+  return (
+    <Wrapper
+      onClick={onClick}
+      className={cn(
+        "block w-full text-left",
+        onClick && "transition-transform hover:scale-[1.01] active:scale-[0.99]",
+      )}
+    >
+      <Card className="overflow-hidden hover:border-border/80 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-muted-foreground">{label}</p>
+            <div className={cn("h-7 w-7 rounded-md flex items-center justify-center", toneClass)}>
+              <Icon className="h-3.5 w-3.5" />
             </div>
           </div>
+          <p className="text-2xl font-bold tabular-nums tracking-tight">{value}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">{sub}</p>
+        </CardContent>
+      </Card>
+    </Wrapper>
+  );
+}
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 rounded-2xl h-11 px-5 shadow-sm border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all"
-              onClick={refreshDashboard}
-            >
-              <RefreshCcw className={cn("h-4 w-4 text-muted-foreground", isRefreshing && "animate-spin text-primary")} />
-              <span className="font-semibold tracking-wide">Sync Data</span>
-            </Button>
-            <Button className="flex items-center gap-2 rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 font-bold bg-primary hover:bg-primary/90 transition-all active:scale-95">
-              <PlusCircle className="h-4 w-4" />
-              Assign Shipment
-            </Button>
-          </div>
-        </div>
+function FleetRow({
+  icon: Icon,
+  tone,
+  label,
+  value,
+  sub,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  tone: "primary" | "blue" | "green";
+  label: string;
+  value: number;
+  sub: string;
+}) {
+  const toneClass = {
+    primary: "bg-primary/10 text-primary",
+    blue: "bg-blue-500/10 text-blue-500",
+    green: "bg-green-500/10 text-green-500",
+  }[tone];
 
-        {/* Stats Row */}
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4 relative z-10">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 24 }}
-            >
-              <DashboardStatsCard
-                title={stat.title}
-                value={stat.value}
-                icon={stat.icon}
-                change={stat.change}
-                changeType={stat.changeType}
-                className="bg-background/40 border border-border/30 shadow-none hover:bg-background/60 transition-colors backdrop-blur-xl rounded-3xl"
-              />
-            </motion.div>
-          ))}
-        </div>
-      </GlassCard>
-
-      {/* Main Content Grid */}
-      <motion.section variants={itemVariants} className="grid gap-8 lg:grid-cols-[1fr,420px]">
-        <AssignmentsTable assignments={assignments} />
-        <DriverStatusCard drivers={drivers} />
-      </motion.section>
-
-      {/* Performance Section */}
-      <motion.section variants={itemVariants}>
-        <PerformanceChart metrics={performance} />
-      </motion.section>
-
-      {/* Quick Access Footer */}
-      <motion.section variants={itemVariants} className="flex flex-wrap items-center justify-center gap-6 py-6 border-t border-border/10">
-        <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-muted/20 hover:bg-muted/40 transition-all text-xs font-bold text-muted-foreground uppercase tracking-widest border border-border/20">
-          <Truck className="h-4 w-4" />
-          Fleet Map
-        </button>
-        <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-muted/20 hover:bg-muted/40 transition-all text-xs font-bold text-muted-foreground uppercase tracking-widest border border-border/20">
-          <HistoryIcon className="h-4 w-4" />
-          Audit Logs
-        </button>
-      </motion.section>
-    </motion.div>
+  return (
+    <div className="flex items-center gap-3">
+      <div className={cn("h-9 w-9 rounded-md flex items-center justify-center shrink-0", toneClass)}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground/70 truncate">{sub}</p>
+      </div>
+      <p className="text-xl font-bold tabular-nums shrink-0">{value}</p>
+    </div>
   );
 }
