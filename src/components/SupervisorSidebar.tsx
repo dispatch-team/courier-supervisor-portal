@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Package,
   Users,
-  Map as MapIcon,
   CircleDollarSign,
   FileText,
   LogOut,
@@ -27,7 +26,6 @@ const NAV_ITEMS = [
   { label: "Shipments", href: "/supervisor/shipments", icon: Package },
   { label: "Drivers", href: "/supervisor/drivers", icon: Users },
   { label: "Fleet", href: "/supervisor/fleet", icon: Activity },
-  { label: "Fleet Map", href: "/supervisor/fleet-map", icon: MapIcon },
   { label: "Revenue", href: "/supervisor/revenue", icon: CircleDollarSign },
   { label: "Reports", href: "/supervisor/reports", icon: FileText },
 ];
