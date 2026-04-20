@@ -21,20 +21,29 @@ import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import dispatchLogo from "@/assets/dispatch-logo.png";
 
-const NAV_ITEMS = [
-  { label: "Dashboard", href: "/supervisor", icon: LayoutDashboard },
-  { label: "Shipments", href: "/supervisor/shipments", icon: Package },
-  { label: "Drivers", href: "/supervisor/drivers", icon: Users },
-  { label: "Fleet", href: "/supervisor/fleet", icon: Activity },
-  { label: "Revenue", href: "/supervisor/revenue", icon: CircleDollarSign },
-  { label: "Reports", href: "/supervisor/reports", icon: FileText },
+import { useI18n } from "@/intl";
+
+// We'll define icons here but labels will be translated inside the component
+const NAV_ICONS = [
+  { id: "dashboard", href: "/supervisor", icon: LayoutDashboard },
+  { id: "shipments", href: "/supervisor/shipments", icon: Package },
+  { id: "drivers", href: "/supervisor/drivers", icon: Users },
+  { id: "fleet", href: "/supervisor/fleet", icon: Activity },
+  { id: "revenue", href: "/supervisor/revenue", icon: CircleDollarSign },
+  { id: "reports", href: "/supervisor/reports", icon: FileText },
 ];
 
 export function SupervisorSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const t = useI18n("sidebar");
   const { logout, user } = useAuth();
+  
+  const navItems = NAV_ICONS.map(item => ({
+    ...item,
+    label: t(item.id as any)
+  }));
 
   const handleLogout = async () => {
     await logout();
@@ -85,7 +94,7 @@ export function SupervisorSidebar() {
 
       {/* Nav Items */}
       <div className="flex-1 px-4 py-2 space-y-2 overflow-y-auto hidden-scrollbar">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/supervisor" && pathname?.startsWith(item.href));
           const Icon = item.icon;
           return (
@@ -130,23 +139,30 @@ export function SupervisorSidebar() {
                 <span className="text-sm font-semibold tracking-wide text-foreground truncate">
                   {user?.name || user?.preferred_username || "Supervisor"}
                 </span>
-                <span className="text-[11px] opacity-60 truncate">{user?.email || "Courier Supervisor"}</span>
+                <span className="text-[11px] opacity-60 truncate">{user?.email || t("roleTitle")}</span>
               </div>
             )}
           </div>
         </Link>
         
-        <div className="flex items-center rounded-2xl p-3 text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-all duration-300 cursor-pointer border border-transparent">
-          <Settings className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-300", isCollapsed ? "mx-auto" : "mr-4")} />
-          {!isCollapsed && <span className="text-sm font-medium tracking-wide">System Settings</span>}
-        </div>
+         <Link href="/supervisor/settings">
+          <div className={cn(
+            "flex items-center rounded-2xl p-3 transition-all duration-300 cursor-pointer border",
+            pathname?.startsWith("/supervisor/settings")
+              ? "bg-primary/10 text-primary border-primary/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground border-transparent",
+          )}>
+            <Settings className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-300", isCollapsed ? "mx-auto" : "mr-4")} />
+            {!isCollapsed && <span className="text-sm font-medium tracking-wide">{t("settings")}</span>}
+          </div>
+        </Link>
 
-        <button
+         <button
           onClick={handleLogout}
           className="group flex w-full items-center rounded-2xl p-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-300 border border-transparent"
         >
           <LogOut className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110", isCollapsed ? "mx-auto" : "mr-4")} />
-          {!isCollapsed && <span className="text-sm font-medium tracking-wide">Log Out</span>}
+          {!isCollapsed && <span className="text-sm font-medium tracking-wide">{t("logOut")}</span>}
         </button>
       </div>
     </motion.aside>

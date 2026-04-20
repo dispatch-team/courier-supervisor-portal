@@ -254,12 +254,12 @@ export default function ShipmentsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Manage and assign shipments to drivers
+            {t("subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
           {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
-          <span>{totalCount} shipments</span>
+          <span>{t("totalCount", { count: totalCount.toString() })}</span>
         </div>
       </div>
 
@@ -283,17 +283,17 @@ export default function ShipmentsPage() {
                 />
               </TableHead>
               <TableHead>
-                <SortableHeader label="ID" field="code" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label={t("table.id")} field="code" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
               </TableHead>
-              <TableHead className="hidden lg:table-cell">Recipient</TableHead>
-              <TableHead className="hidden xl:table-cell">Pickup</TableHead>
-              <TableHead className="hidden xl:table-cell">Delivery</TableHead>
+              <TableHead className="hidden lg:table-cell">{t("table.recipient")}</TableHead>
+              <TableHead className="hidden xl:table-cell">{t("table.pickup")}</TableHead>
+              <TableHead className="hidden xl:table-cell">{t("table.delivery")}</TableHead>
               <TableHead>
-                <SortableHeader label="Status" field="status" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label={t("table.status")} field="status" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
               </TableHead>
-              <TableHead className="hidden md:table-cell">Driver</TableHead>
+              <TableHead className="hidden md:table-cell">{t("table.driver")}</TableHead>
               <TableHead className="hidden md:table-cell">
-                <SortableHeader label="Created" field="created_at" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
+                <SortableHeader label={t("table.created")} field="created_at" currentField={sortField} currentDir={sortDir} onSort={handleSort} />
               </TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
@@ -306,8 +306,8 @@ export default function ShipmentsPage() {
                     <Inbox className="h-8 w-8 text-muted-foreground/50" />
                     <p className="text-muted-foreground">
                       {searchTerm
-                        ? "No shipments match your search."
-                        : "No shipments currently assigned to your courier company."}
+                        ? t("empty.description")
+                        : t("empty.noAssignments")}
                     </p>
                   </div>
                 </TableCell>
@@ -375,14 +375,14 @@ export default function ShipmentsPage() {
                         )}
                       >
                         <StatusIcon className="h-3 w-3" />
-                        {formatStatus(shipment.status)}
+                        {t(`status.${shipment.status}` as any)}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <span className="text-sm">
                         {shipment.assigned_driver_id
-                          ? `Driver #${shipment.assigned_driver_id}`
-                          : <span className="text-muted-foreground">Unassigned</span>}
+                          ? `${t("table.driver")} #${shipment.assigned_driver_id}`
+                          : <span className="text-muted-foreground">{t("status.unassigned")}</span>}
                       </span>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -399,12 +399,12 @@ export default function ShipmentsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44">
                           <DropdownMenuItem onClick={() => setAssignShipment(shipment)}>
-                            Assign Driver
+                            {t("assignDriver")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => router.push(`/supervisor/shipments/${shipment.code}`)}
                           >
-                            View Details
+                            {t("viewDetails")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -421,7 +421,7 @@ export default function ShipmentsPage() {
       {totalCount > 0 && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Rows per page</span>
+            <span>{t("rowsPerPage")}</span>
             <select
               value={pageSize}
               onChange={(e) => handlePageSizeChange(Number(e.target.value))}
@@ -436,7 +436,7 @@ export default function ShipmentsPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
+              {t("pageOf", { page: page.toString(), total: totalPages.toString() })}
             </span>
             <Button
               variant="outline"
@@ -468,7 +468,7 @@ export default function ShipmentsPage() {
               <div className="h-6 min-w-6 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center px-1.5">
                 {selectedCodes.size}
               </div>
-              <span className="text-sm font-medium text-foreground">selected</span>
+              <span className="text-sm font-medium text-foreground">{t("selected")}</span>
             </div>
             <div className="w-px h-5 bg-border" />
             <Button
@@ -477,7 +477,7 @@ export default function ShipmentsPage() {
               className="gap-1.5 h-7 text-xs"
             >
               <Users className="h-3 w-3" />
-              Batch Assign
+              {t("batchAssign")}
             </Button>
             <Button
               size="sm"
@@ -486,7 +486,7 @@ export default function ShipmentsPage() {
               className="h-7 text-xs text-muted-foreground hover:text-foreground"
             >
               <X className="h-3 w-3 mr-1" />
-              Clear
+              {t("clear")}
             </Button>
           </div>
         </div>

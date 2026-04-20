@@ -74,10 +74,10 @@ function getPresetRange(preset: Exclude<RangePreset, "custom">): { start: Date; 
   return { start, end };
 }
 
-function presetLabel(preset: RangePreset, custom?: DateRange): string {
+function presetLabel(preset: RangePreset, locale: string, custom?: DateRange): string {
   if (preset === "custom" && custom?.from && custom?.to) {
     const fmt = (d: Date) =>
-      d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      d.toLocaleDateString(locale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric" });
     return `${fmt(custom.from)} – ${fmt(custom.to)}`;
   }
   return PRESETS.find((p) => p.id === preset)?.label ?? "";
@@ -87,23 +87,25 @@ function toRfc3339(d: Date): string {
   return d.toISOString();
 }
 
-function formatShortDate(iso: string): string {
+function formatShortDate(iso: string, locale: string = "en-US"): string {
   const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return d.toLocaleDateString(locale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric" });
 }
 
-const volumeConfig = {
-  delivered: { label: "Delivered", color: "hsl(var(--status-delivered))" },
-  failed: { label: "Failed", color: "hsl(var(--status-failed))" },
-} satisfies ChartConfig;
+import { useI18n, useLocale } from "@/intl";
 
-const statusConfig = {
-  delivered: { label: "Delivered", color: "hsl(var(--status-delivered))" },
-  inProgress: { label: "In Progress", color: "hsl(var(--status-in-transit))" },
-  failed: { label: "Failed", color: "hsl(var(--status-failed))" },
-  returned: { label: "Returned", color: "hsl(var(--status-pending))" },
-  cancelled: { label: "Cancelled", color: "hsl(var(--status-cancelled))" },
-} satisfies ChartConfig;
+const getVolumeConfig = (t: any): ChartConfig => ({
+  delivered: { label: t("metrics.delivered"), color: "hsl(var(--status-delivered))" },
+  failed: { label: t("metrics.failed"), color: "hsl(var(--status-failed))" },
+});
+
+const getStatusConfig = (intl: any): ChartConfig => ({
+  delivered: { label: intl("status.delivered"), color: "hsl(var(--status-delivered))" },
+  inProgress: { label: intl("status.inTransit"), color: "hsl(var(--status-in-transit))" },
+  failed: { label: intl("status.failed"), color: "hsl(var(--status-failed))" },
+  returned: { label: intl("status.returned"), color: "hsl(var(--status-pending))" },
+  cancelled: { label: intl("status.cancelled"), color: "hsl(var(--status-cancelled))" },
+});
 
 export default function DriverPerformancePage({
   params,
@@ -113,6 +115,16 @@ export default function DriverPerformancePage({
   const { id } = use(params);
   const driverId = Number(id);
   const router = useRouter();
+  const { locale: currentLocale } = useLocale();
+  const t = useI18n("driverPerformance");
+  const ts = useI18n("shipments");
+  
+  const presets = useMemo(() => [
+    { id: "7d" as const, label: "7d", days: 7 },
+    { id: "30d" as const, label: "30d", days: 30 },
+    { id: "90d" as const, label: "90d", days: 90 },
+  ], []);
+
   const [preset, setPreset] = useState<RangePreset>("30d");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -140,6 +152,14 @@ export default function DriverPerformancePage({
     return computeDriverMetrics(shipmentData.shipments, start, end);
   }, [shipmentData, start, end]);
 
+  const volumeData = useMemo(() => {
+    if (!metrics) return [];
+    return metrics.dailyVolume.map((d) => ({
+      ...d,
+      label: formatShortDate(d.date, currentLocale),
+    }));
+  }, [metrics, currentLocale]);
+
   const isLoading = driverLoading || shipmentsLoading;
 
   const handleExport = async (format: "pdf" | "excel") => {
@@ -166,9 +186,9 @@ export default function DriverPerformancePage({
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Driver not found</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("notFound")}</h3>
         <Button onClick={() => router.push("/supervisor/drivers")}>
-          Back to drivers
+          {t("backToDrivers")}
         </Button>
       </div>
     );
@@ -191,9 +211,7 @@ export default function DriverPerformancePage({
       ].filter((d) => d.value > 0)
     : [];
 
-  // Format daily volume dates for nicer display
-  const formattedVolume =
-    metrics?.dailyVolume.map((d) => ({ ...d, label: formatShortDate(d.date) })) ?? [];
+  // Format daily volume dates for nicer display (using useMemo for volumeData instead)
 
   return (
     <div className="space-y-6">
@@ -227,7 +245,7 @@ export default function DriverPerformancePage({
                     "border-green-500/30 bg-green-500/10 text-green-500",
                 )}
               >
-                {driver.status}
+                {driver.status === "active" ? t("statusActive") : driver.status}
               </Badge>
             </div>
           </div>
@@ -235,7 +253,7 @@ export default function DriverPerformancePage({
 
         <div className="flex items-center gap-2 self-start">
           <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5">
-            {PRESETS.map((p) => (
+            {presets.map((p) => (
               <button
                 key={p.id}
                 onClick={() => {
@@ -273,27 +291,27 @@ export default function DriverPerformancePage({
                 disabled={!hasData || exporting !== null}
                 className="gap-1.5"
               >
-                {exporting !== null ? (
+                 {exporting !== null ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <Download className="h-3.5 w-3.5" />
                 )}
-                Export
+                {t("export")}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={() => handleExport("pdf")} className="gap-2">
                 <FileText className="h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-sm">PDF Report</span>
-                  <span className="text-[10px] text-muted-foreground">Formatted document</span>
+                  <span className="text-sm">{t("reports.pdf")}</span>
+                  <span className="text-[10px] text-muted-foreground">{t("reports.pdfDesc")}</span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("excel")} className="gap-2">
                 <FileSpreadsheet className="h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-sm">Excel Workbook</span>
-                  <span className="text-[10px] text-muted-foreground">Editable spreadsheet</span>
+                  <span className="text-sm">{t("reports.excel")}</span>
+                  <span className="text-[10px] text-muted-foreground">{t("reports.excelDesc")}</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -307,9 +325,9 @@ export default function DriverPerformancePage({
             <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
               <Package className="h-6 w-6 text-muted-foreground/60" />
             </div>
-            <p className="text-base font-medium">No delivery data</p>
+            <p className="text-base font-medium">{t("empty.title")}</p>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-              No shipments assigned to {driver.first_name} during the selected period.
+              {t("empty.description", { name: driver.first_name })}
             </p>
           </CardContent>
         </Card>
@@ -372,9 +390,9 @@ export default function DriverPerformancePage({
               <CardHeader>
                 <div className="flex items-baseline justify-between">
                   <div>
-                    <CardTitle className="text-base">Delivery Activity</CardTitle>
+                    <CardTitle className="text-base">{t("charts.activity")}</CardTitle>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {presetLabel(preset, customRange)} • {metrics.delivered} delivered, {metrics.failed} failed
+                      {presetLabel(preset, currentLocale, customRange)} • {metrics.delivered} {t("metrics.delivered")}, {metrics.failed} {t("metrics.failed")}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-xs">
@@ -384,9 +402,9 @@ export default function DriverPerformancePage({
                 </div>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={volumeConfig} className="h-64 w-full">
+                <ChartContainer config={getVolumeConfig(t)} className="h-64 w-full">
                   <AreaChart
-                    data={formattedVolume}
+                    data={volumeData}
                     margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                   >
                     <defs>
@@ -438,11 +456,11 @@ export default function DriverPerformancePage({
             {/* Status breakdown — donut */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Status Breakdown</CardTitle>
+                <CardTitle className="text-base">{t("charts.breakdown")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer
-                  config={statusConfig}
+                  config={getStatusConfig(ts)}
                   className="mx-auto aspect-square max-h-[200px]"
                 >
                   <PieChart>
@@ -467,7 +485,7 @@ export default function DriverPerformancePage({
                 {/* Center label overlay */}
                 <div className="-mt-[120px] mb-[80px] flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-2xl font-bold tabular-nums">{metrics.total}</span>
-                  <span className="text-xs text-muted-foreground">total</span>
+                  <span className="text-xs text-muted-foreground">{t("charts.total")}</span>
                 </div>
                 {/* Legend */}
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-2">
@@ -478,7 +496,7 @@ export default function DriverPerformancePage({
                         style={{ backgroundColor: d.fill }}
                       />
                       <span className="text-muted-foreground capitalize">
-                        {statusConfig[d.key as keyof typeof statusConfig]?.label}
+                        {(getStatusConfig(ts) as any)[d.key]?.label}
                       </span>
                       <span className="ml-auto font-medium tabular-nums">{d.value}</span>
                     </div>
@@ -541,6 +559,8 @@ function CustomRangePicker({
   onOpenChange: (open: boolean) => void;
   onApply: (range: DateRange) => void;
 }) {
+  const { locale: currentLocale } = useLocale();
+  const t = useI18n("driverPerformance");
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(customRange);
 
   const handleOpenChange = (next: boolean) => {
@@ -562,7 +582,7 @@ function CustomRangePicker({
           )}
         >
           <CalendarIcon className="h-3 w-3" />
-          {isCustomActive ? presetLabel("custom", customRange) : "Custom"}
+          {isCustomActive ? presetLabel("custom", currentLocale, customRange) : t("presets.custom")}
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="p-0 w-auto" sideOffset={6}>
@@ -581,14 +601,14 @@ function CustomRangePicker({
           <p className="text-xs text-muted-foreground">
             {draftRange?.from && draftRange?.to ? (
               <>
-                {draftRange.from.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                {draftRange.from.toLocaleDateString(currentLocale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric" })}
                 {" – "}
-                {draftRange.to.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                {draftRange.to.toLocaleDateString(currentLocale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric", year: "numeric" })}
               </>
             ) : draftRange?.from ? (
-              "Pick an end date"
+              t("picker.pickEnd")
             ) : (
-              "Pick a start date"
+              t("picker.pickStart")
             )}
           </p>
           <div className="flex items-center gap-1.5">
@@ -598,14 +618,14 @@ function CustomRangePicker({
               onClick={() => setDraftRange(undefined)}
               disabled={!draftRange?.from}
             >
-              Clear
+              {t("picker.clear")}
             </Button>
             <Button
               size="sm"
               onClick={() => draftRange?.from && draftRange?.to && onApply(draftRange)}
               disabled={!draftRange?.from || !draftRange?.to}
             >
-              Apply
+              {t("picker.apply")}
             </Button>
           </div>
         </div>

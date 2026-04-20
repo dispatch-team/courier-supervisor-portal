@@ -63,17 +63,17 @@ interface MetricConfig {
   format: (m: DriverMetrics) => string;
 }
 
-const METRICS: MetricConfig[] = [
+const getMetrics = (tp: any): MetricConfig[] => [
   {
     key: "delivered",
-    label: "Delivered",
+    label: tp("metrics.delivered"),
     higherIsBetter: true,
     getValue: (m) => m.delivered,
     format: (m) => String(m.delivered),
   },
   {
     key: "successRate",
-    label: "Success Rate",
+    label: tp("metrics.successRate"),
     higherIsBetter: true,
     getValue: (m) => (m.delivered + m.failed + m.returned > 0 ? m.successRate : null),
     format: (m) =>
@@ -83,14 +83,14 @@ const METRICS: MetricConfig[] = [
   },
   {
     key: "failed",
-    label: "Failed",
+    label: tp("metrics.failed"),
     higherIsBetter: false,
     getValue: (m) => m.failed,
     format: (m) => String(m.failed),
   },
   {
     key: "failureRate",
-    label: "Failure Rate",
+    label: tp("metrics.rate", { count: "" }).replace("% rate", "").trim(), // A bit hacky, but avoids duplicating keys
     higherIsBetter: false,
     getValue: (m) => (m.delivered + m.failed + m.returned > 0 ? m.failureRate : null),
     format: (m) =>
@@ -100,21 +100,21 @@ const METRICS: MetricConfig[] = [
   },
   {
     key: "avgTime",
-    label: "Avg Delivery Time",
+    label: tp("metrics.avgTime"),
     higherIsBetter: false,
     getValue: (m) => m.avgPickupToDeliveryMs,
     format: (m) => formatDuration(m.avgPickupToDeliveryMs),
   },
   {
     key: "deliveriesPerDay",
-    label: "Daily Average",
+    label: tp("metrics.dailyAvg"),
     higherIsBetter: true,
     getValue: (m) => m.deliveriesPerDay,
     format: (m) => m.deliveriesPerDay.toFixed(2),
   },
   {
     key: "avgRating",
-    label: "Avg Rating",
+    label: tp("metrics.avgRating"),
     higherIsBetter: true,
     getValue: (m) => m.avgRating,
     format: (m) => (m.avgRating !== null ? m.avgRating.toFixed(2) : "—"),
@@ -141,9 +141,13 @@ function rankDrivers(
   return { bestId: best.id, worstId: worst.id };
 }
 
+import { useI18n } from "@/intl";
+
 export default function DriverComparePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useI18n("driverCompare");
+  const tp = useI18n("driverPerformance");
   const idsParam = searchParams.get("ids") ?? "";
   const driverIds = useMemo(
     () =>
@@ -184,9 +188,10 @@ export default function DriverComparePage() {
   if (driverIds.length < 2) {
     return (
       <EmptyState
-        title="Select at least 2 drivers"
-        description="Pick two or more drivers from the driver list to compare their performance."
+        title={t("empty.title")}
+        description={t("empty.description")}
         onBack={() => router.push("/supervisor/drivers")}
+        backLabel={t("backToDrivers")}
       />
     );
   }
@@ -194,9 +199,10 @@ export default function DriverComparePage() {
   if (selectedDrivers.length < 2) {
     return (
       <EmptyState
-        title="Drivers not found"
-        description="Some of the selected drivers couldn't be loaded. Try again from the driver list."
+        title={t("empty.notFoundTitle")}
+        description={t("empty.notFoundDescription")}
         onBack={() => router.push("/supervisor/drivers")}
+        backLabel={t("backToDrivers")}
       />
     );
   }
@@ -273,7 +279,7 @@ export default function DriverComparePage() {
       </div>
 
       {/* Comparison table */}
-      <ComparisonTable drivers={selectedDrivers} start={start} end={end} />
+      <ComparisonTable drivers={selectedDrivers} start={start} end={end} t={t} tp={tp} />
     </div>
   );
 }
@@ -285,10 +291,14 @@ function ComparisonTable({
   drivers,
   start,
   end,
+  t,
+  tp,
 }: {
   drivers: Driver[];
   start: Date;
   end: Date;
+  t: any;
+  tp: any;
 }) {
   const [metricsMap, setMetricsMap] = useState<Map<number, DriverMetrics>>(new Map());
 
@@ -316,7 +326,8 @@ function ComparisonTable({
   const isAnyLoading = driverMetrics.some((d) => d.metrics === null);
 
   // Pre-rank all metrics to find best/worst per row
-  const rankings = METRICS.map((m) => ({
+  const metricsList = useMemo(() => getMetrics(tp), [tp]);
+  const rankings = metricsList.map((m) => ({
     metric: m,
     ...rankDrivers(driverMetrics, m),
   }));
@@ -336,10 +347,10 @@ function ComparisonTable({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-baseline justify-between">
-            <CardTitle className="text-base">Performance Metrics</CardTitle>
+            <CardTitle className="text-base">{t("metrics")}</CardTitle>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <LegendDot tone="green" label="Top" icon={Trophy} />
-              <LegendDot tone="red" label="Bottom" icon={AlertTriangle} />
+              <LegendDot tone="green" label={t("top")} icon={Trophy} />
+              <LegendDot tone="red" label={t("bottom")} icon={AlertTriangle} />
             </div>
           </div>
         </CardHeader>
@@ -349,7 +360,7 @@ function ComparisonTable({
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left text-xs font-medium text-muted-foreground p-3 sticky left-0 bg-muted/30 z-10 min-w-[160px]">
-                    Metric
+                    {t("metricCol")}
                   </th>
                   {driverMetrics.map(({ driver }) => (
                     <th key={driver.id} className="p-3 min-w-[180px]">
@@ -371,7 +382,7 @@ function ComparisonTable({
                                 "border-green-500/30 bg-green-500/10 text-green-500",
                             )}
                           >
-                            {driver.status}
+                            {driver.status === "active" ? tp("statusActive") : driver.status}
                           </Badge>
                         </div>
                       </div>
@@ -388,7 +399,7 @@ function ComparisonTable({
                     >
                       <Loader2 className="h-6 w-6 animate-spin text-primary inline-block" />
                       <p className="text-xs text-muted-foreground mt-2">
-                        Loading shipment data for all drivers...
+                        {t("loading")}
                       </p>
                     </td>
                   </tr>
@@ -498,10 +509,12 @@ function EmptyState({
   title,
   description,
   onBack,
+  backLabel,
 }: {
   title: string;
   description: string;
   onBack: () => void;
+  backLabel: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -509,7 +522,7 @@ function EmptyState({
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground mb-4 max-w-sm">{description}</p>
       <Button onClick={onBack} variant="outline">
-        Back to drivers
+        {backLabel}
       </Button>
     </div>
   );

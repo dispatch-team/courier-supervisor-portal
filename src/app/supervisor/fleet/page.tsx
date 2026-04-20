@@ -64,13 +64,23 @@ function getPresetRange(preset: Exclude<RangePreset, "custom">): { start: Date; 
   return { start, end };
 }
 
-const hourlyConfig = {
-  count: { label: "Shipments", color: "hsl(var(--primary))" },
-} satisfies ChartConfig;
+import { useI18n } from "@/intl";
+
+const getHourlyConfig = (t: any): ChartConfig => ({
+  count: { label: t("fleet.workload.shipments"), color: "hsl(var(--primary))" },
+});
 
 export default function FleetUtilizationPage() {
   const router = useRouter();
+  const t = useI18n("fleet");
   const { companyId, isLoading: companyLoading } = useCompanyId();
+  
+  const presets = useMemo(() => [
+    { id: "today" as const, label: t("presets.today") },
+    { id: "7d" as const, label: t("presets.week") },
+    { id: "30d" as const, label: t("presets.month") },
+  ], [t]);
+
   const [preset, setPreset] = useState<RangePreset>("today");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -109,6 +119,7 @@ export default function FleetUtilizationPage() {
       <div className="space-y-6">
         <Header
           preset={preset}
+          presets={presets}
           customRange={customRange}
           pickerOpen={pickerOpen}
           onPresetChange={(p) => {
@@ -128,9 +139,9 @@ export default function FleetUtilizationPage() {
             <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
               <Users className="h-6 w-6 text-muted-foreground/60" />
             </div>
-            <p className="text-base font-medium">No active drivers in your fleet.</p>
+            <p className="text-base font-medium">{t("empty.title")}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Add drivers from the Drivers page to start tracking fleet utilization.
+              {t("empty.description")}
             </p>
           </CardContent>
         </Card>
@@ -153,6 +164,7 @@ export default function FleetUtilizationPage() {
     <div className="space-y-6">
       <Header
         preset={preset}
+        presets={presets}
         customRange={customRange}
         pickerOpen={pickerOpen}
         onPresetChange={(p) => {
@@ -173,30 +185,30 @@ export default function FleetUtilizationPage() {
         <OverviewCard
           icon={Users}
           tone="primary"
-          label="Active Drivers"
+          label={t("stats.activeDrivers")}
           value={metrics.totalActiveDrivers}
-          sub="in fleet"
+          sub={t("stats.inFleet")}
         />
         <OverviewCard
           icon={Truck}
           tone="blue"
-          label="On Delivery"
+          label={t("stats.onDelivery")}
           value={metrics.onDelivery}
-          sub={`${((metrics.onDelivery / metrics.totalActiveDrivers) * 100).toFixed(0)}% of fleet`}
+          sub={t("stats.fleetPct", { pct: ((metrics.onDelivery / metrics.totalActiveDrivers) * 100).toFixed(0) })}
         />
         <OverviewCard
           icon={Coffee}
           tone="amber"
-          label="Idle Drivers"
+          label={t("stats.idleDrivers")}
           value={metrics.idle}
-          sub="available now"
+          sub={t("stats.availableNow")}
         />
         <OverviewCard
           icon={Package}
           tone="green"
-          label="Shipments"
+          label={t("stats.shipments")}
           value={metrics.totalShipments}
-          sub={`${metrics.totalDelivered} delivered`}
+          sub={t("stats.deliveredCount", { count: metrics.totalDelivered.toString() })}
         />
       </div>
 
@@ -207,15 +219,18 @@ export default function FleetUtilizationPage() {
           <CardHeader>
             <div className="flex items-baseline justify-between">
               <div>
-                <CardTitle className="text-base">Workload Distribution</CardTitle>
+                <CardTitle className="text-base">{t("workload.title")}</CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {metrics.workload.length} drivers • avg {metrics.avgWorkload.toFixed(1)} shipments/driver
+                  {t("workload.summary", { 
+                    count: metrics.workload.length.toString(), 
+                    avg: metrics.avgWorkload.toFixed(1) 
+                  })}
                 </p>
               </div>
               <div className="flex items-center gap-3 text-xs">
-                <LegendDot color="hsl(var(--status-delivered))" label="Delivered" />
-                <LegendDot color="hsl(var(--status-in-transit))" label="In Progress" />
-                <LegendDot color="hsl(var(--status-failed))" label="Failed" />
+                <LegendDot color="hsl(var(--status-delivered))" label={t("workload.delivered")} />
+                <LegendDot color="hsl(var(--status-in-transit))" label={t("workload.inProgress")} />
+                <LegendDot color="hsl(var(--status-failed))" label={t("workload.failed")} />
               </div>
             </div>
           </CardHeader>
@@ -229,21 +244,21 @@ export default function FleetUtilizationPage() {
           <CardHeader>
             <div className="flex items-baseline justify-between">
               <div>
-                <CardTitle className="text-base">Peak Hours</CardTitle>
+                <CardTitle className="text-base">{t("peakHours.title")}</CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Activity by hour of day
+                  {t("peakHours.subtitle")}
                 </p>
               </div>
               {peakHour.count > 0 && (
                 <Badge variant="outline" className="text-[10px] gap-1">
                   <Clock className="h-3 w-3" />
-                  Peak: {formatHour(peakHour.hour)}
+                  {t("peakHours.peak", { time: formatHour(peakHour.hour) })}
                 </Badge>
               )}
             </div>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={hourlyConfig} className="h-64 w-full">
+            <ChartContainer config={getHourlyConfig(t)} className="h-64 w-full">
               <BarChart
                 data={metrics.hourlyActivity}
                 margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
@@ -283,6 +298,7 @@ export default function FleetUtilizationPage() {
 
 function Header({
   preset,
+  presets,
   customRange,
   pickerOpen,
   onPresetChange,
@@ -291,6 +307,7 @@ function Header({
   onCustomApply,
 }: {
   preset: RangePreset;
+  presets: { id: Exclude<RangePreset, "custom">; label: string }[];
   customRange: DateRange | undefined;
   pickerOpen: boolean;
   onPresetChange: (p: Exclude<RangePreset, "custom">) => void;
@@ -298,18 +315,19 @@ function Header({
   onCustomChange: (range: DateRange | undefined) => void;
   onCustomApply: (range: DateRange) => void;
 }) {
+  const t = useI18n("fleet");
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(customRange);
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Fleet Utilization</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Capacity, workload distribution, and operational insights
+          {t("subtitle")}
         </p>
       </div>
       <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5 self-start">
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <button
             key={p.id}
             onClick={() => onPresetChange(p.id)}
@@ -340,7 +358,7 @@ function Header({
               )}
             >
               <CalendarIcon className="h-3 w-3" />
-              Custom
+              {t("presets.custom")}
             </button>
           </PopoverTrigger>
           <PopoverContent align="end" className="p-0 w-auto" sideOffset={6}>
@@ -363,14 +381,14 @@ function Header({
                 onClick={() => onPickerOpenChange(false)}
                 className="text-xs px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
               >
-                Cancel
+                {t("calendar.cancel")}
               </button>
               <button
                 onClick={() => draftRange?.from && draftRange?.to && onCustomApply(draftRange)}
                 disabled={!draftRange?.from || !draftRange?.to}
                 className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground disabled:opacity-50 hover:bg-primary/90 transition-colors"
               >
-                Apply
+                {t("calendar.apply")}
               </button>
             </div>
           </PopoverContent>
@@ -475,6 +493,7 @@ function Recommendations({
   metrics: import("@/lib/fleet-metrics").FleetMetrics;
   formatHour: (h: number) => string;
 }) {
+  const t = useI18n("fleet");
   const router = useRouter();
 
   const insights: { tone: "red" | "amber" | "blue" | "green"; icon: React.ComponentType<{ className?: string }>; title: string; body: React.ReactNode }[] = [];
@@ -484,12 +503,10 @@ function Recommendations({
     insights.push({
       tone: "red",
       icon: AlertTriangle,
-      title: "Fleet at capacity",
+      title: t("recommendations.atCapacity.title"),
       body: (
         <>
-          {(metrics.utilizationRate * 100).toFixed(0)}% of active drivers are
-          on delivery. Consider activating more drivers or pausing low-priority
-          assignments to absorb new requests.
+          {t("recommendations.atCapacity.body", { pct: (metrics.utilizationRate * 100).toFixed(0) })}
         </>
       ),
     });
@@ -497,11 +514,14 @@ function Recommendations({
     insights.push({
       tone: "amber",
       icon: AlertTriangle,
-      title: "Capacity tightening",
+      title: t("recommendations.tightening.title"),
       body: (
         <>
-          {(metrics.utilizationRate * 100).toFixed(0)}% of fleet is engaged.
-          Watch for spikes — only {metrics.idle} driver{metrics.idle === 1 ? "" : "s"} idle.
+          {t("recommendations.tightening.body", { 
+            pct: (metrics.utilizationRate * 100).toFixed(0),
+            count: metrics.idle.toString(),
+            s: metrics.idle === 1 ? t("recommendations.tightening.driver") : t("recommendations.tightening.drivers")
+          })}
         </>
       ),
     });
@@ -509,11 +529,10 @@ function Recommendations({
     insights.push({
       tone: "blue",
       icon: TrendingDown,
-      title: "Spare capacity available",
+      title: t("recommendations.spare.title"),
       body: (
         <>
-          {metrics.idle} of {metrics.totalActiveDrivers} drivers are idle.
-          Fleet can absorb new shipments without rebalancing.
+          {t("recommendations.spare.body", { idle: metrics.idle.toString(), total: metrics.totalActiveDrivers.toString() })}
         </>
       ),
     });
@@ -525,11 +544,10 @@ function Recommendations({
     insights.push({
       tone: "blue",
       icon: Clock,
-      title: "Optimal activation windows",
+      title: t("recommendations.activation.title"),
       body: (
         <>
-          Demand peaks at <span className="font-semibold text-foreground">{hourLabels}</span>.
-          Schedule additional drivers around these hours to avoid backlogs.
+          {t("recommendations.activation.body", { hours: hourLabels })}
         </>
       ),
     });
@@ -542,11 +560,10 @@ function Recommendations({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recommendations</CardTitle>
+          <CardTitle className="text-base">{t("recommendations.title")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Fleet is balanced. No capacity gaps or workload imbalances detected
-          for this period.
+          {t("recommendations.balanced")}
         </CardContent>
       </Card>
     );
@@ -555,9 +572,9 @@ function Recommendations({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Recommendations</CardTitle>
+        <CardTitle className="text-base">{t("recommendations.title")}</CardTitle>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Insights derived from current workload + activity patterns
+          {t("recommendations.subtitle")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -577,8 +594,8 @@ function Recommendations({
               <RecommendationGroup
                 tone="red"
                 icon={TrendingUp}
-                title="Overworked"
-                description="Above 1.5x fleet average — reassign new shipments"
+                title={t("recommendations.overworked.title")}
+                description={t("recommendations.overworked.desc")}
                 drivers={metrics.overworked}
                 onDriverClick={(id) => router.push(`/supervisor/drivers/${id}/performance`)}
               />
@@ -587,8 +604,8 @@ function Recommendations({
               <RecommendationGroup
                 tone="amber"
                 icon={TrendingDown}
-                title="Underutilized"
-                description="Below 0.5x fleet average — assign more shipments"
+                title={t("recommendations.underutilized.title")}
+                description={t("recommendations.underutilized.desc")}
                 drivers={metrics.underutilized}
                 onDriverClick={(id) => router.push(`/supervisor/drivers/${id}/performance`)}
               />
@@ -636,6 +653,7 @@ function WorkloadList({
   workload: import("@/lib/fleet-metrics").DriverWorkload[];
   avg: number;
 }) {
+  const t = useI18n("fleet");
   const router = useRouter();
   // Cap height around 6 rows; scroll the rest
   const ROW_HEIGHT = 44; // px (approx)
@@ -715,7 +733,7 @@ function WorkloadList({
       </div>
       {workload.length > VISIBLE_ROWS && (
         <p className="text-[10px] text-muted-foreground text-center pt-2 border-t border-border/30 mt-2">
-          Scroll to see all {workload.length} drivers
+          {t("workload.scroll", { count: workload.length.toString() })}
         </p>
       )}
     </div>

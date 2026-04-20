@@ -85,10 +85,10 @@ export default function CourierProfilePage() {
         <Card className="max-w-md w-full mx-4">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Error Loading Profile</h2>
+            <h2 className="text-lg font-semibold mb-2">{t("errorLoading")}</h2>
             <p className="text-muted-foreground mb-6">{error}</p>
             <Button onClick={handleRetry} className="w-full">
-              Try Again
+              {t("tryAgain")}
             </Button>
           </CardContent>
         </Card>
@@ -102,12 +102,12 @@ export default function CourierProfilePage() {
         <Card className="max-w-md w-full mx-4">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-lg font-semibold mb-2">No Profile Data</h2>
+            <h2 className="text-lg font-semibold mb-2">{t("noProfileData")}</h2>
             <p className="text-muted-foreground mb-6">
-              Profile data is unavailable. Contact Admin.
+              {t("noProfileDataDesc")}
             </p>
             <Button onClick={() => router.push("/supervisor")} className="w-full">
-              Return to Dashboard
+              {t("returnToDashboard")}
             </Button>
           </CardContent>
         </Card>
@@ -160,9 +160,9 @@ export default function CourierProfilePage() {
             <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium text-destructive">Profile incomplete</p>
+                <p className="font-medium text-destructive">{t("incomplete.title")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Contact Admin to complete your company profile.
+                  {t("incomplete.description")}
                 </p>
               </div>
             </div>

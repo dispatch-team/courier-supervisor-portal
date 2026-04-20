@@ -1,3 +1,4 @@
+import { useI18n } from "@/intl";
 import { cn } from "@/lib/utils";
 import { Users, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -16,13 +17,15 @@ interface DriverStatusCardProps {
 }
 
 export function DriverStatusCard({ drivers, className }: DriverStatusCardProps) {
+  const t = useI18n("supervisorDashboard");
+
   return (
     <GlassCard className={className}>
       <DashboardSectionHeader 
-        subtitle="Fleet Management"
-        title="Driver Status"
+        subtitle={t("fleetManagement")}
+        title={t("driverStatus")}
         action={{ 
-          label: "View all",
+          label: t("viewAll"),
           onClick: () => {} // In a real app, use router or handler
         }}
       />
@@ -53,7 +56,7 @@ export function DriverStatusCard({ drivers, className }: DriverStatusCardProps) 
             <div className="text-right flex items-center gap-6">
               <div className="hidden sm:block">
                 <p className="text-lg font-black text-foreground">{driver.deliveriesToday}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Deliveries Today</p>
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">{t("deliveriesToday")}</p>
               </div>
               <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center border border-border/40 shadow-sm group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 <ChevronRight className="h-4 w-4" />

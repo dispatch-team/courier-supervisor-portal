@@ -56,18 +56,20 @@ import {
 } from "@/lib/revenue-report";
 import { cn } from "@/lib/utils";
 
+import { useI18n, useLocale } from "@/intl";
+
 type RangePreset = "7d" | "30d" | "90d" | "custom";
 
-const PRESETS: { id: Exclude<RangePreset, "custom">; label: string; days: number }[] = [
-  { id: "7d", label: "7d", days: 7 },
-  { id: "30d", label: "30d", days: 30 },
-  { id: "90d", label: "90d", days: 90 },
-];
+const PRESET_DAYS: Record<Exclude<RangePreset, "custom">, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+};
 
 function getPresetRange(preset: Exclude<RangePreset, "custom">): { start: Date; end: Date } {
   const end = new Date();
   const start = new Date();
-  start.setDate(start.getDate() - PRESETS.find((p) => p.id === preset)!.days);
+  start.setDate(start.getDate() - PRESET_DAYS[preset]);
   return { start, end };
 }
 
@@ -78,17 +80,27 @@ function getPriorRange(start: Date, end: Date): { priorStart: Date; priorEnd: Da
   return { priorStart, priorEnd };
 }
 
-function formatShortDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatShortDate(iso: string, locale: string = "en-US"): string {
+  return new Date(iso).toLocaleDateString(locale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric" });
 }
 
-const revenueConfig = {
-  revenue: { label: "Revenue", color: "hsl(var(--primary))" },
-} satisfies ChartConfig;
+// Config labels will be set dynamically
+const getRevenueChartConfig = (t: any): ChartConfig => ({
+  revenue: { label: t("revenue"), color: "hsl(var(--primary))" },
+});
 
 export default function RevenuePage() {
   const router = useRouter();
   const { companyId, isLoading: companyLoading } = useCompanyId();
+  const { locale: currentLocale } = useLocale();
+  const t = useI18n("revenue");
+  
+  const presets = useMemo(() => [
+    { id: "7d" as const, label: t("presets.d7") },
+    { id: "30d" as const, label: t("presets.d30") },
+    { id: "90d" as const, label: t("presets.d90") },
+  ], [t]);
+
   const [preset, setPreset] = useState<RangePreset>("30d");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -155,15 +167,15 @@ export default function RevenuePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Revenue</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Earnings from delivered shipments, with comparison to the prior period
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start">
           <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5">
-            {PRESETS.map((p) => (
+            {presets.map((p) => (
               <button
                 key={p.id}
                 onClick={() => {
@@ -201,27 +213,27 @@ export default function RevenuePage() {
                 disabled={!hasData || exporting !== null}
                 className="gap-1.5"
               >
-                {exporting !== null ? (
+                 {exporting !== null ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <Download className="h-3.5 w-3.5" />
                 )}
-                Export
+                {t("export")}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={() => handleExport("pdf")} className="gap-2">
                 <FileText className="h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-sm">PDF Report</span>
-                  <span className="text-[10px] text-muted-foreground">Formatted document</span>
+                  <span className="text-sm">{t("pdfReport")}</span>
+                  <span className="text-[10px] text-muted-foreground">{t("pdfDesc")}</span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("excel")} className="gap-2">
                 <FileSpreadsheet className="h-4 w-4" />
                 <div className="flex flex-col">
-                  <span className="text-sm">Excel Workbook</span>
-                  <span className="text-[10px] text-muted-foreground">Editable spreadsheet</span>
+                  <span className="text-sm">{t("excelReport")}</span>
+                  <span className="text-[10px] text-muted-foreground">{t("excelDesc")}</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -235,38 +247,38 @@ export default function RevenuePage() {
             <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
               <Wallet className="h-6 w-6 text-muted-foreground/60" />
             </div>
-            <p className="text-base font-medium">No revenue data available for selected period.</p>
+            <p className="text-base font-medium">{t("empty.title")}</p>
             <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              Revenue is calculated from completed deliveries. Try a wider date range.
+              {t("empty.description")}
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
           {/* Summary cards with prior-period comparison */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <RevenueCard
               icon={Wallet}
               tone="primary"
-              label="Total Revenue"
+              label={t("stats.totalRevenue")}
               value={formatEtb(metrics.totalRevenue)}
               changePct={metrics.revenueChangePct}
-              priorLabel={`vs ${formatEtb(metrics.prior.totalRevenue)} prior`}
+              priorLabel={t("stats.priorComparison", { amount: formatEtb(metrics.prior.totalRevenue) })}
             />
             <RevenueCard
               icon={Package}
               tone="green"
-              label="Deliveries"
+              label={t("stats.deliveries")}
               value={metrics.deliveredCount.toLocaleString()}
               changePct={metrics.deliveriesChangePct}
-              priorLabel={`vs ${metrics.prior.deliveredCount} prior`}
+              priorLabel={t("stats.priorComparison", { amount: metrics.prior.deliveredCount.toString() })}
             />
             <RevenueCard
               icon={TrendingUp}
               tone="blue"
-              label="Avg per Delivery"
+              label={t("stats.avgPerDelivery")}
               value={formatEtb(metrics.avgPerDelivery)}
-              priorLabel="across all delivered shipments"
+              priorLabel={t("stats.avgNote")}
             />
           </div>
 
@@ -275,19 +287,19 @@ export default function RevenuePage() {
             <CardHeader>
               <div className="flex items-baseline justify-between">
                 <div>
-                  <CardTitle className="text-base">Revenue Trend</CardTitle>
+                  <CardTitle className="text-base">{t("trend.title")}</CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Daily revenue across the selected range
+                    {t("trend.subtitle")}
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={revenueConfig} className="h-72 w-full">
+              <ChartContainer config={getRevenueChartConfig(t)} className="h-72 w-full">
                 <AreaChart
                   data={metrics.dailyRevenue.map((d) => ({
                     ...d,
-                    label: formatShortDate(d.date),
+                    label: formatShortDate(d.date, currentLocale),
                   }))}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                 >
@@ -336,9 +348,12 @@ export default function RevenuePage() {
             <Card>
               <CardHeader>
                 <div className="flex items-baseline justify-between">
-                  <CardTitle className="text-base">Top Revenue-Generating Drivers</CardTitle>
+                  <CardTitle className="text-base">{t("topDrivers.title")}</CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    {metrics.topDrivers.length} driver{metrics.topDrivers.length > 1 ? "s" : ""} contributed
+                    {t("topDrivers.contributed", { 
+                      count: metrics.topDrivers.length.toString(), 
+                      s: metrics.topDrivers.length > 1 ? t("topDrivers.drivers") : t("topDrivers.driver") 
+                    })}
                   </span>
                 </div>
               </CardHeader>
@@ -370,7 +385,10 @@ export default function RevenuePage() {
                           )}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {d.count} deliver{d.count === 1 ? "y" : "ies"}
+                          {t("topDrivers.deliveries", { 
+                            count: d.count.toString(), 
+                            s: d.count === 1 ? t("topDrivers.delivery") : t("topDrivers.deliveriesPlural") 
+                          })}
                         </p>
                       </div>
                       <div className="flex-1 max-w-[200px] hidden sm:block">
@@ -386,7 +404,7 @@ export default function RevenuePage() {
                           {formatEtb(d.revenue)}
                         </p>
                         <p className="text-[10px] text-muted-foreground tabular-nums">
-                          {sharePct.toFixed(1)}% share
+                          {t("topDrivers.share", { pct: sharePct.toFixed(1) })}
                         </p>
                       </div>
                     </button>
@@ -469,6 +487,7 @@ function CustomRangePicker({
   onOpenChange: (open: boolean) => void;
   onApply: (range: DateRange) => void;
 }) {
+  const t = useI18n("revenue");
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(customRange);
 
   const handleOpenChange = (next: boolean) => {
@@ -490,9 +509,9 @@ function CustomRangePicker({
           )}
         >
           <CalendarIcon className="h-3 w-3" />
-          {isActive
+             {isActive
             ? `${customRange!.from!.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${customRange!.to!.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-            : "Custom"}
+            : t("presets.custom")}
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="p-0 w-auto" sideOffset={6}>
@@ -514,14 +533,14 @@ function CustomRangePicker({
             onClick={() => setDraftRange(undefined)}
             disabled={!draftRange?.from}
           >
-            Clear
+            {t("calendar.clear")}
           </Button>
           <Button
             size="sm"
             onClick={() => draftRange?.from && draftRange?.to && onApply(draftRange)}
             disabled={!draftRange?.from || !draftRange?.to}
           >
-            Apply
+            {t("calendar.apply")}
           </Button>
         </div>
       </PopoverContent>

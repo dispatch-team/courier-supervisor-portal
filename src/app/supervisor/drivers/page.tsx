@@ -139,12 +139,12 @@ export default function DriversPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your fleet of drivers
+            {t("manageFleet")}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
           <UserPlus className="h-4 w-4" />
-          Add Driver
+          {t("addDriver")}
         </Button>
       </div>
 
@@ -158,7 +158,7 @@ export default function DriversPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search drivers..."
+              placeholder={t("searchPlaceholder")}
               className={cn(inputClass, "w-full pl-8")}
             />
           </div>
@@ -176,9 +176,9 @@ export default function DriversPage() {
                     : "text-muted-foreground hover:text-foreground hover:bg-muted",
                 )}
               >
-                {tab.label}
+                {t(`filters.${tab.id}` as any)}
                 <span className="ml-1 text-[10px] opacity-60">
-                  {counts[tab.id as keyof typeof counts]}
+                  {counts[tab.id as keyof typeof counts].toString()}
                 </span>
               </button>
             ))}
@@ -207,11 +207,11 @@ export default function DriversPage() {
                   aria-label="Select all drivers"
                 />
               </TableHead>
-              <TableHead>Driver</TableHead>
-              <TableHead className="hidden md:table-cell">Phone</TableHead>
-              <TableHead className="hidden lg:table-cell">Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Rating</TableHead>
+              <TableHead>{t("table.driver")}</TableHead>
+              <TableHead className="hidden md:table-cell">{t("table.phone")}</TableHead>
+              <TableHead className="hidden lg:table-cell">{t("table.email")}</TableHead>
+              <TableHead>{t("table.status")}</TableHead>
+              <TableHead className="hidden md:table-cell">{t("table.rating")}</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
@@ -223,8 +223,8 @@ export default function DriversPage() {
                     <UserX className="h-8 w-8 text-muted-foreground/50" />
                     <p className="text-muted-foreground">
                       {searchTerm
-                        ? "No drivers match your search."
-                        : "No drivers in your fleet yet."}
+                        ? t("empty.description")
+                        : t("empty.noDriversInFleet")}
                     </p>
                     {!searchTerm && (
                       <Button
@@ -234,7 +234,7 @@ export default function DriversPage() {
                         onClick={() => setCreateOpen(true)}
                       >
                         <UserPlus className="h-3.5 w-3.5" />
-                        Add your first driver
+                        {t("addFirstDriver")}
                       </Button>
                     )}
                   </div>
@@ -292,7 +292,7 @@ export default function DriversPage() {
                     <span className="text-sm text-muted-foreground">{driver.email}</span>
                   </TableCell>
                   <TableCell>
-                    {getStatusBadge(driver.status)}
+                    {t(`status.${driver.status}` as any)}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {driver.rating_aggregate > 0 ? (
@@ -319,31 +319,31 @@ export default function DriversPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => setEditDriver(driver)}>Edit Driver</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditDriver(driver)}>{t("editDriver")}</DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => router.push(`/supervisor/drivers/${driver.id}/performance`)}
                         >
-                          View Performance
+                          {t("viewPerformance")}
                         </DropdownMenuItem>
                         {driver.status === "active" ? (
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => setDeactivateDriver(driver)}
                           >
-                            Deactivate
+                            {t("deactivate")}
                           </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem
                             onClick={() => setReactivateDriver(driver)}
                           >
-                            Activate
+                            {t("activate")}
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => setDeleteDriver(driver)}
                         >
-                          Delete
+                          {t("delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -392,7 +392,7 @@ export default function DriversPage() {
               <div className="h-6 min-w-6 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center px-1.5">
                 {selectedIds.size}
               </div>
-              <span className="text-sm font-medium text-foreground">selected</span>
+              <span className="text-sm font-medium text-foreground">{t("selected")}</span>
             </div>
             <div className="w-px h-5 bg-border" />
             <Button
@@ -406,7 +406,7 @@ export default function DriversPage() {
               className="gap-1.5 h-7 text-xs"
             >
               <GitCompare className="h-3 w-3" />
-              Compare ({selectedIds.size})
+              {t("compare")} ({selectedIds.size.toString()})
             </Button>
             <Button
               size="sm"
@@ -415,7 +415,7 @@ export default function DriversPage() {
               className="h-7 text-xs text-muted-foreground hover:text-foreground"
             >
               <X className="h-3 w-3 mr-1" />
-              Clear
+              {t("clear")}
             </Button>
           </div>
         </div>

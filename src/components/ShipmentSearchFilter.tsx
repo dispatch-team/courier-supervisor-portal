@@ -22,22 +22,6 @@ interface ShipmentSearchFilterProps {
   filters: ShipmentFilterValues;
 }
 
-const STATUS_OPTIONS = [
-  { id: "all", label: "All" },
-  { id: "pending", label: "Pending" },
-  { id: "assigned_to_courier", label: "Assigned" },
-  { id: "in_transit", label: "In Transit" },
-  { id: "delivered", label: "Delivered" },
-  { id: "failed", label: "Failed" },
-  { id: "cancelled", label: "Cancelled" },
-];
-
-const DRIVER_OPTIONS = [
-  { id: "all", label: "All Drivers" },
-  { id: "unassigned", label: "Unassigned" },
-  { id: "assigned", label: "Assigned" },
-];
-
 const DEFAULT_FILTERS: ShipmentFilterValues = {
   status: "all",
   dateStart: "",
@@ -53,9 +37,9 @@ function countAdvanced(filters: ShipmentFilterValues): number {
   );
 }
 
-function validateDateRange(start: string, end: string): string | null {
+function validateDateRange(start: string, end: string, errorMsg: string): string | null {
   if (start && end && new Date(start) > new Date(end)) {
-    return "Start date must be before end date";
+    return errorMsg;
   }
   return null;
 }
@@ -78,8 +62,24 @@ export function ShipmentSearchFilter({
   const t = useI18n("shipments");
   const [searchTerm, setSearchTerm] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const dateError = validateDateRange(filters.dateStart, filters.dateEnd);
+  const dateError = validateDateRange(filters.dateStart, filters.dateEnd, t("filters.dateError"));
   const advancedCount = countAdvanced(filters);
+
+  const STATUS_OPTIONS = [
+    { id: "all", label: t("filters.all") },
+    { id: "pending", label: t("filters.pending") },
+    { id: "assigned_to_courier", label: t("filters.assigned") },
+    { id: "in_transit", label: t("filters.inTransit") },
+    { id: "delivered", label: t("filters.delivered") },
+    { id: "failed", label: t("filters.failed") },
+    { id: "cancelled", label: t("filters.cancelled") },
+  ];
+
+  const DRIVER_OPTIONS = [
+    { id: "all", label: t("filters.allDrivers") },
+    { id: "unassigned", label: t("filters.unassigned") },
+    { id: "assigned", label: t("filters.assigned") },
+  ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -111,7 +111,7 @@ export function ShipmentSearchFilter({
             type="text"
             value={searchTerm}
             onChange={handleSearchChange}
-            placeholder="Search shipments..."
+            placeholder={t("searchPlaceholder")}
             className={cn(inputClass, "pl-8 max-w-none")}
           />
         </div>
@@ -147,7 +147,7 @@ export function ShipmentSearchFilter({
                 )}
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
-                Filters
+                {t("filters.advanced")}
                 {advancedCount > 0 && (
                   <span className="h-4 min-w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold px-1">
                     {advancedCount}
@@ -157,9 +157,9 @@ export function ShipmentSearchFilter({
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0">
               <div className="p-3 border-b border-border">
-                <p className="text-sm font-medium">Advanced Filters</p>
+                <p className="text-sm font-medium">{t("filters.advanced")}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Narrow down your shipment list
+                  {t("filters.narrowDown")}
                 </p>
               </div>
               <div className="p-3 space-y-4">
@@ -167,7 +167,7 @@ export function ShipmentSearchFilter({
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                     <Calendar className="h-3 w-3" />
-                    Date Range
+                    {t("filters.dateRange")}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -176,7 +176,7 @@ export function ShipmentSearchFilter({
                       onChange={(e) => updateFilter("dateStart", e.target.value)}
                       className={inputClass}
                     />
-                    <span className="text-xs text-muted-foreground shrink-0">to</span>
+                    <span className="text-xs text-muted-foreground shrink-0">{t("filters.to")}</span>
                     <input
                       type="date"
                       value={filters.dateEnd}
@@ -195,7 +195,7 @@ export function ShipmentSearchFilter({
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                     <UserCheck className="h-3 w-3" />
-                    Driver Assignment
+                    {t("filters.driverAssignment")}
                   </label>
                   <div className="flex gap-1.5">
                     {DRIVER_OPTIONS.map((opt) => (
@@ -230,7 +230,7 @@ export function ShipmentSearchFilter({
                       });
                     }}
                   >
-                    Clear advanced filters
+                    {t("filters.clearAdvanced")}
                   </Button>
                 </div>
               )}
@@ -245,7 +245,7 @@ export function ShipmentSearchFilter({
               className="h-8 px-2 text-xs text-muted-foreground"
             >
               <X className="h-3 w-3 mr-1" />
-              Reset all
+              {t("filters.resetAll")}
             </Button>
           )}
         </div>
@@ -256,7 +256,7 @@ export function ShipmentSearchFilter({
         <div className="flex flex-wrap items-center gap-1.5">
           {filters.dateStart && (
             <Badge variant="secondary" className="gap-1 pr-1 text-xs font-normal">
-              From: {formatDateShort(filters.dateStart)}
+              {t("filters.fromLabel")} {formatDateShort(filters.dateStart)}
               <button
                 onClick={() => clearFilter("dateStart")}
                 className="ml-0.5 h-3.5 w-3.5 rounded-full hover:bg-foreground/10 flex items-center justify-center"
@@ -267,7 +267,7 @@ export function ShipmentSearchFilter({
           )}
           {filters.dateEnd && (
             <Badge variant="secondary" className="gap-1 pr-1 text-xs font-normal">
-              To: {formatDateShort(filters.dateEnd)}
+              {t("filters.toLabel")} {formatDateShort(filters.dateEnd)}
               <button
                 onClick={() => clearFilter("dateEnd")}
                 className="ml-0.5 h-3.5 w-3.5 rounded-full hover:bg-foreground/10 flex items-center justify-center"
@@ -278,7 +278,7 @@ export function ShipmentSearchFilter({
           )}
           {filters.driverAssignment !== "all" && (
             <Badge variant="secondary" className="gap-1 pr-1 text-xs font-normal">
-              Driver: {filters.driverAssignment}
+              {t("filters.driverLabel")} {t(`filters.${filters.driverAssignment}` as any)}
               <button
                 onClick={() => clearFilter("driverAssignment")}
                 className="ml-0.5 h-3.5 w-3.5 rounded-full hover:bg-foreground/10 flex items-center justify-center"

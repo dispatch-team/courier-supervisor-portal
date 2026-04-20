@@ -1,3 +1,4 @@
+import { useI18n } from "@/intl";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { GlassCard } from "./GlassCard";
@@ -14,13 +15,15 @@ interface PerformanceChartProps {
 }
 
 export function PerformanceChart({ metrics, className }: PerformanceChartProps) {
+  const t = useI18n("supervisorDashboard");
+
   return (
     <GlassCard className={className} gradient={false}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       
       <DashboardSectionHeader 
-        subtitle="Performance Metrics"
-        title="Today's Performance"
+        subtitle={t("performanceStatus")}
+        title={t("performanceTitle")}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative z-10 font-sans">

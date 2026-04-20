@@ -170,7 +170,7 @@ export default function ReportsPage() {
                                 <Star className="h-4 w-4 fill-current" />
                                 <span className="font-black text-lg">{driver.rating}</span>
                              </div>
-                             <p className="text-[8px] font-black uppercase text-muted-foreground tracking-tighter opacity-40">AVERAGE RATING</p>
+                             <p className="text-[8px] font-black uppercase text-muted-foreground tracking-tighter opacity-40">{t("leaderboard.table.rating")}</p>
                           </div>
                           <ChevronRight className="h-5 w-5 text-muted-foreground opacity-20 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" />
                        </div>
@@ -192,7 +192,7 @@ export default function ReportsPage() {
                <div className="space-y-6">
                   <div className="space-y-2">
                      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2"><Bike className="h-3 w-3" /> Motorcycles</div>
+                        <div className="flex items-center gap-2"><Bike className="h-3 w-3" /> {t("vehicles.motorcycles")}</div>
                         <span>64%</span>
                      </div>
                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -206,7 +206,7 @@ export default function ReportsPage() {
 
                   <div className="space-y-2">
                      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2"><Car className="h-3 w-3" /> Compact Cars</div>
+                        <div className="flex items-center gap-2"><Car className="h-3 w-3" /> {t("vehicles.compactCars")}</div>
                         <span>32%</span>
                      </div>
                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -220,7 +220,7 @@ export default function ReportsPage() {
 
                   <div className="space-y-2 opacity-40">
                      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2">Trucks / Vans</div>
+                        <div className="flex items-center gap-2">{t("vehicles.trucksVans")}</div>
                         <span>4%</span>
                      </div>
                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useI18n } from "@/intl";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
@@ -11,6 +12,7 @@ import { formatEtb } from "@/lib/revenue-metrics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useI18n as useI18nShip } from "@/intl"; // I'll use separate t for shipments
 import {
   Loader2,
   RefreshCcw,
@@ -50,6 +52,8 @@ export default function SupervisorDashboard() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const t = useI18n("supervisorDashboard");
+  const tShip = useI18n("shipments");
   const { companyId, isLoading: companyLoading } = useCompanyId();
 
   // Today's shipments (created/active today)
@@ -122,10 +126,10 @@ export default function SupervisorDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Welcome back, {user?.given_name || user?.preferred_username || "Supervisor"}
+            {t("welcomeBack", { name: user?.given_name || user?.preferred_username || "Supervisor" })}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Today&apos;s operations at a glance
+            {t("todaysOperations")}
           </p>
         </div>
         <div className="flex items-center gap-2 self-start">
@@ -137,7 +141,7 @@ export default function SupervisorDashboard() {
             className="gap-1.5"
           >
             <RefreshCcw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
-            Refresh
+            {t("refresh")}
           </Button>
           <Button
             size="sm"
@@ -145,7 +149,7 @@ export default function SupervisorDashboard() {
             className="gap-1.5"
           >
             <Package className="h-3.5 w-3.5" />
-            View Shipments
+            {t("viewShipments")}
           </Button>
         </div>
       </div>
@@ -159,20 +163,24 @@ export default function SupervisorDashboard() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-foreground">
-                Attention needed
+                {t("attentionNeeded")}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {stats.unassigned > 0 && (
                   <>
-                    <span className="font-medium text-foreground">{stats.unassigned}</span> shipment
-                    {stats.unassigned > 1 ? "s" : ""} awaiting driver assignment
+                    {t("awaitingAssignment", {
+                      count: stats.unassigned.toString(),
+                      s: stats.unassigned > 1 ? "s" : ""
+                    })}
                   </>
                 )}
                 {stats.unassigned > 0 && stats.pending > 0 && " • "}
                 {stats.pending > 0 && (
                   <>
-                    <span className="font-medium text-foreground">{stats.pending}</span> pending shipment
-                    {stats.pending > 1 ? "s" : ""}
+                    {t("pendingCount", {
+                      count: stats.pending.toString(),
+                      s: stats.pending > 1 ? "s" : ""
+                    })}
                   </>
                 )}
               </p>
@@ -183,7 +191,7 @@ export default function SupervisorDashboard() {
               onClick={() => router.push("/supervisor/shipments?status=assigned_to_courier")}
               className="gap-1.5 shrink-0"
             >
-              Review
+              {t("review")}
               <ArrowRight className="h-3 w-3" />
             </Button>
           </CardContent>
@@ -195,36 +203,36 @@ export default function SupervisorDashboard() {
         <StatCard
           icon={Clock}
           tone="amber"
-          label="Pending"
+          label={t("pending")}
           value={stats?.unassigned ?? 0}
-          sub="awaiting assignment"
+          sub={t("awaitingAssignmentSub")}
           onClick={() => router.push("/supervisor/shipments?status=assigned_to_courier")}
         />
         <StatCard
           icon={Truck}
           tone="blue"
-          label="In Progress"
+          label={t("inProgress")}
           value={stats?.inProgress ?? 0}
-          sub="on the road"
+          sub={t("onTheRoad")}
           onClick={() => router.push("/supervisor/shipments?status=in_transit")}
         />
         <StatCard
           icon={CheckCircle2}
           tone="green"
-          label="Delivered Today"
+          label={t("deliveriesToday")}
           value={stats?.deliveredToday ?? 0}
           sub={
             stats && stats.failedToday > 0
-              ? `${stats.failedToday} failed today`
-              : "no failures today"
+              ? t("failedToday", { count: stats.failedToday.toString() })
+              : t("noFailuresToday")
           }
         />
         <StatCard
           icon={Wallet}
           tone="primary"
-          label="Revenue Today"
+          label={t("revenueToday")}
           value={formatEtb(stats?.revenueToday ?? 0)}
-          sub="from completed deliveries"
+          sub={t("fromCompletedDeliveries")}
           onClick={() => router.push("/supervisor/revenue")}
         />
       </div>
@@ -235,12 +243,12 @@ export default function SupervisorDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-baseline justify-between">
-              <CardTitle className="text-base">Action Items</CardTitle>
+              <CardTitle className="text-base">{t("actionItems")}</CardTitle>
               <button
                 onClick={() => router.push("/supervisor/shipments")}
                 className="text-xs text-primary hover:underline"
               >
-                View all shipments →
+                {t("viewAllShipments")}
               </button>
             </div>
           </CardHeader>
@@ -250,9 +258,9 @@ export default function SupervisorDashboard() {
                 <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
                   <CheckCircle2 className="h-6 w-6 text-green-500" />
                 </div>
-                <p className="text-sm font-medium">All caught up</p>
+                <p className="text-sm font-medium">{t("allCaughtUp")}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  No pending or unassigned shipments
+                  {t("noPendingUnassigned")}
                 </p>
               </div>
             ) : (
@@ -271,7 +279,7 @@ export default function SupervisorDashboard() {
                         {s.code}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {s.description || "No description"}
+                        {s.description || t("noDescription")}
                       </p>
                     </div>
                     <Badge
@@ -284,7 +292,7 @@ export default function SupervisorDashboard() {
                           "border-blue-500/30 bg-blue-500/10 text-blue-500",
                       )}
                     >
-                      {s.status.replace(/_/g, " ")}
+                      {tShip(`status.${s.status}` as any)}
                     </Badge>
                   </button>
                 ))}
@@ -297,12 +305,12 @@ export default function SupervisorDashboard() {
         <Card>
           <CardHeader>
             <div className="flex items-baseline justify-between">
-              <CardTitle className="text-base">Fleet Status</CardTitle>
+              <CardTitle className="text-base">{t("fleetStatus")}</CardTitle>
               <button
                 onClick={() => router.push("/supervisor/fleet")}
                 className="text-xs text-primary hover:underline"
               >
-                Details →
+                {t("detailsLink")}
               </button>
             </div>
           </CardHeader>
@@ -310,27 +318,27 @@ export default function SupervisorDashboard() {
             <FleetRow
               icon={Users}
               tone="primary"
-              label="Active"
+              label={t("activeLabel")}
               value={stats?.activeDrivers ?? 0}
-              sub="in fleet"
+              sub={t("inFleet")}
             />
             <FleetRow
               icon={Truck}
               tone="blue"
-              label="On Delivery"
+              label={t("onDeliveryLabel")}
               value={stats?.onDelivery ?? 0}
               sub={
                 stats && stats.activeDrivers > 0
-                  ? `${(stats.utilizationRate * 100).toFixed(0)}% utilization`
+                  ? t("utilizationLabel", { rate: (stats.utilizationRate * 100).toFixed(0) })
                   : "—"
               }
             />
             <FleetRow
               icon={CheckCircle2}
               tone="green"
-              label="Idle / Available"
+              label={t("idleAvailableLabel")}
               value={stats?.idle ?? 0}
-              sub="ready for assignments"
+              sub={t("readyForAssignments")}
             />
 
             {/* Quick driver shortcut */}
@@ -342,7 +350,7 @@ export default function SupervisorDashboard() {
                 onClick={() => router.push("/supervisor/drivers")}
               >
                 <Users className="h-3.5 w-3.5" />
-                Manage Drivers
+                {t("manageDrivers")}
               </Button>
             </div>
           </CardContent>

@@ -1,6 +1,7 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
+import { useI18n } from "@/intl";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -27,9 +28,9 @@ import { useShipment } from "@/hooks/queries/use-shipments";
 import { ShipmentMapLoader } from "@/components/ShipmentMapLoader";
 import type { ShipmentStatus } from "@/types/api";
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale: string = "en-GB"): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-GB", {
+  return new Date(iso).toLocaleString(locale === "am" ? "am-ET" : "en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -38,8 +39,8 @@ function formatDate(iso: string | null): string {
   });
 }
 
-function formatStatus(status: ShipmentStatus): string {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function formatStatus(status: ShipmentStatus, t: any): string {
+  return t(`status.${status}` as any);
 }
 
 function getStatusConfig(status: ShipmentStatus) {
@@ -79,20 +80,22 @@ function buildTimeline(shipment: {
   failed_at: string | null;
   returned_at: string | null;
   cancelled_at: string | null;
-}): TimelineEvent[] {
+}, t: any): TimelineEvent[] {
   const events: TimelineEvent[] = [
-    { label: "Created", timestamp: shipment.created_at, icon: Package },
-    { label: "Assigned to Courier", timestamp: shipment.assigned_to_courier_at, icon: Truck },
-    { label: "Assigned to Driver", timestamp: shipment.assigned_to_driver_at, icon: User },
-    { label: "Picked Up", timestamp: shipment.picked_up_at, icon: Package },
-    { label: "In Transit", timestamp: shipment.in_transit_at, icon: Truck },
-    { label: "Delivered", timestamp: shipment.delivered_at, icon: CheckCircle2 },
-    { label: "Failed", timestamp: shipment.failed_at, icon: AlertCircle },
-    { label: "Returned", timestamp: shipment.returned_at, icon: RotateCcw },
-    { label: "Cancelled", timestamp: shipment.cancelled_at, icon: XCircle },
+    { label: t("timeline.created"), timestamp: shipment.created_at, icon: Package },
+    { label: t("timeline.assigned_to_courier"), timestamp: shipment.assigned_to_courier_at, icon: Truck },
+    { label: t("timeline.assigned_to_driver"), timestamp: shipment.assigned_to_driver_at, icon: User },
+    { label: t("timeline.picked_up"), timestamp: shipment.picked_up_at, icon: Package },
+    { label: t("timeline.in_transit"), timestamp: shipment.in_transit_at, icon: Truck },
+    { label: t("timeline.delivered"), timestamp: shipment.delivered_at, icon: CheckCircle2 },
+    { label: t("timeline.failed"), timestamp: shipment.failed_at, icon: AlertCircle },
+    { label: t("timeline.returned"), timestamp: shipment.returned_at, icon: RotateCcw },
+    { label: t("timeline.cancelled"), timestamp: shipment.cancelled_at, icon: XCircle },
   ];
   return events.filter((e) => e.timestamp !== null);
 }
+
+import { useLocale } from "@/intl";
 
 export default function ShipmentDetailPage({
   params,
@@ -101,6 +104,8 @@ export default function ShipmentDetailPage({
 }) {
   const { code } = use(params);
   const router = useRouter();
+  const { locale } = useLocale();
+  const t = useI18n("shipments");
   const { data: shipment, isLoading, error } = useShipment(code);
 
   if (isLoading) {
@@ -118,11 +123,11 @@ export default function ShipmentDetailPage({
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
         <h3 className="text-lg font-semibold mb-2">
-          {is404 ? "Shipment not found" : is403 ? "Access denied" : "Failed to load shipment"}
+          {is404 ? t("details.notFound") : is403 ? t("details.accessDenied") : t("details.failedLoad")}
         </h3>
         <p className="text-muted-foreground mb-4">{error.message}</p>
         <Button onClick={() => router.push("/supervisor/shipments")}>
-          Back to Shipments
+          {t("details.backToShipments")}
         </Button>
       </div>
     );
@@ -132,7 +137,7 @@ export default function ShipmentDetailPage({
 
   const statusConfig = getStatusConfig(shipment.status);
   const StatusIcon = statusConfig.icon;
-  const timeline = buildTimeline(shipment);
+  const timeline = useMemo(() => buildTimeline(shipment, t), [shipment, t]);
 
   return (
     <div className="space-y-6 min-h-screen max-w-4xl mx-auto">
@@ -157,7 +162,7 @@ export default function ShipmentDetailPage({
           )}
         >
           <StatusIcon className="h-4 w-4" />
-          {formatStatus(shipment.status)}
+          {formatStatus(shipment.status, t)}
         </div>
       </div>
 
@@ -166,24 +171,24 @@ export default function ShipmentDetailPage({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            Basic Information
+            {t("details.basicInfo")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Tracking Number</p>
+              <p className="text-sm text-muted-foreground">{t("details.trackingNumber")}</p>
               <p className="font-mono font-bold">{shipment.code}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Merchant</p>
+              <p className="text-sm text-muted-foreground">{t("details.merchant")}</p>
               <p className="font-medium">
                 {shipment.merchant?.company_name ?? `Merchant #${shipment.merchant_id}`}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Created</p>
-              <p className="font-medium">{formatDate(shipment.created_at)}</p>
+              <p className="text-sm text-muted-foreground">{t("details.created")}</p>
+              <p className="font-medium">{formatDate(shipment.created_at, locale)}</p>
             </div>
           </div>
         </CardContent>
@@ -194,7 +199,7 @@ export default function ShipmentDetailPage({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
-            Status History
+            {t("details.statusHistory")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -215,7 +220,7 @@ export default function ShipmentDetailPage({
                   <div className="pt-1">
                     <p className="font-semibold text-sm">{event.label}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(event.timestamp)}
+                      {formatDate(event.timestamp, locale)}
                     </p>
                   </div>
                 </div>
@@ -230,32 +235,32 @@ export default function ShipmentDetailPage({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
-            Assigned Driver
+            {t("details.assignedDriver")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {shipment.assigned_driver ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Name</p>
+                <p className="text-sm text-muted-foreground">{t("details.name")}</p>
                 <p className="font-medium">
                   {shipment.assigned_driver.first_name} {shipment.assigned_driver.last_name}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Phone</p>
+                <p className="text-sm text-muted-foreground">{t("details.phone")}</p>
                 <div className="flex items-center gap-1.5">
                   <Phone className="h-3 w-3 text-muted-foreground" />
                   <p className="font-medium">{shipment.assigned_driver.phone_number}</p>
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{t("details.email")}</p>
                 <p className="font-medium">{shipment.assigned_driver.email}</p>
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground">No driver assigned</p>
+            <p className="text-muted-foreground">{t("details.noDriver")}</p>
           )}
         </CardContent>
       </Card>
@@ -267,14 +272,14 @@ export default function ShipmentDetailPage({
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <MapPin className="h-5 w-5 text-green-500" />
-              Pickup Address
+              {t("details.pickupAddress")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="font-medium">{shipment.start_address}</p>
             <div className="space-y-1 text-sm">
               <p className="text-muted-foreground">
-                Contact: <span className="text-foreground">{shipment.start_address_contact_name}</span>
+                {t("details.contact")} <span className="text-foreground">{shipment.start_address_contact_name}</span>
               </p>
               {shipment.start_address_phone_number && (
                 <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -291,14 +296,14 @@ export default function ShipmentDetailPage({
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <MapPin className="h-5 w-5 text-red-500" />
-              Delivery Address
+              {t("details.deliveryAddress")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="font-medium">{shipment.end_address}</p>
             <div className="space-y-1 text-sm">
               <p className="text-muted-foreground">
-                Contact: <span className="text-foreground">{shipment.end_address_contact_name}</span>
+                {t("details.contact")} <span className="text-foreground">{shipment.end_address_contact_name}</span>
               </p>
               {shipment.end_address_phone_number && (
                 <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -324,37 +329,37 @@ export default function ShipmentDetailPage({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            Package Details
+            {t("details.packageDetails")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Scale className="h-3 w-3" /> Weight
+                <Scale className="h-3 w-3" /> {t("details.weight")}
               </p>
               <p className="font-medium">{shipment.weight_kg} kg</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Ruler className="h-3 w-3" /> Dimensions
+                <Ruler className="h-3 w-3" /> {t("details.dimensions")}
               </p>
               <p className="font-medium">{shipment.dimensions || "—"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <CreditCard className="h-3 w-3" /> Delivery Fee
+                <CreditCard className="h-3 w-3" /> {t("details.deliveryFee")}
               </p>
               <p className="font-bold text-primary">ETB {shipment.total_fee.toFixed(2)}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Items</p>
-              <p className="font-medium">{shipment.items?.length ?? 0} item(s)</p>
+              <p className="text-sm text-muted-foreground">{t("details.items")}</p>
+              <p className="font-medium">{t("details.itemsCount", { count: (shipment.items?.length ?? 0).toString() })}</p>
             </div>
           </div>
           {shipment.items && shipment.items.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border/40">
-              <p className="text-sm text-muted-foreground mb-2">Item List</p>
+              <p className="text-sm text-muted-foreground mb-2">{t("details.itemList")}</p>
               <ul className="list-disc list-inside text-sm space-y-1">
                 {shipment.items.map((item, i) => (
                   <li key={i} className="text-foreground">{item}</li>
@@ -371,7 +376,7 @@ export default function ShipmentDetailPage({
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Notes
+              {t("details.notes")}
             </CardTitle>
           </CardHeader>
           <CardContent>
