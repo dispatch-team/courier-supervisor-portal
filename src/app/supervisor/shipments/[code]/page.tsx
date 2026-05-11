@@ -108,6 +108,11 @@ export default function ShipmentDetailPage({
   const t = useI18n("shipments");
   const { data: shipment, isLoading, error } = useShipment(code);
 
+  const timeline = useMemo(
+    () => (shipment ? buildTimeline(shipment, t) : []),
+    [shipment, t]
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -137,7 +142,6 @@ export default function ShipmentDetailPage({
 
   const statusConfig = getStatusConfig(shipment.status);
   const StatusIcon = statusConfig.icon;
-  const timeline = useMemo(() => buildTimeline(shipment, t), [shipment, t]);
 
   return (
     <div className="space-y-6 min-h-screen max-w-4xl mx-auto">
