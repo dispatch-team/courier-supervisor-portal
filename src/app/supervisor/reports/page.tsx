@@ -1,6 +1,6 @@
 "use client";
 
-import { useI18n } from "@/intl";
+import { useI18n, useLocale } from "@/intl";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { GlassCard } from "@/components/GlassCard";
@@ -10,11 +10,9 @@ import {
   Trophy, 
   Clock, 
   CheckCircle2, 
-  BarChart3, 
   Download,
   Users2,
-  Bike,
-  Car,
+  Zap,
   Star,
   ChevronRight,
   Loader2,
@@ -24,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
-import { computeRevenueMetrics } from "@/lib/revenue-metrics";
+import { computeRevenueMetrics, formatEtb } from "@/lib/revenue-metrics";
 import { computeFleetMetrics } from "@/lib/fleet-metrics";
 import { computeDriverMetrics, formatDuration } from "@/lib/driver-metrics";
 
@@ -47,6 +45,8 @@ function getPeriodRanges() {
 export default function ReportsPage() {
   const t = useI18n("reports");
   const ts = useI18n("shipments");
+  const tr = useI18n("revenue");
+  const { locale } = useLocale();
   const { companyId, isLoading: companyLoading } = useCompanyId();
   
   const { start, end, priorStart, priorEnd } = useMemo(() => getPeriodRanges(), []);
@@ -90,10 +90,10 @@ export default function ReportsPage() {
         sub: "pickup → delivered" 
       },
       { 
-        label: "onTimePercentage", 
-        value: "91.2%", // Still mock as we don't have SLA field yet
-        icon: BarChart3, 
-        sub: "Goal: 95%" 
+        label: "totalRevenue", 
+        value: formatEtb(rev.totalRevenue), 
+        icon: Zap, 
+        sub: `${rev.revenueChangePct >= 0 ? "+" : ""}${(rev.revenueChangePct * 100).toFixed(1)}% vs prior` 
       },
       { 
         label: "fleetUtilization", 
@@ -144,7 +144,7 @@ export default function ReportsPage() {
       revenueTrend: rev.dailyRevenue.map(d => d.revenue),
       revenueLabels: rev.dailyRevenue.map(d => {
         const dt = new Date(d.date);
-        return dt.toLocaleDateString(ts.locale === 'am' ? 'am-ET' : 'en-US', { month: 'short', day: 'numeric' });
+        return dt.toLocaleDateString(locale === 'am' ? 'am-ET' : 'en-US', { month: 'short', day: 'numeric' });
       }),
       statusData,
       totalShipments: overall.total,
@@ -218,7 +218,9 @@ export default function ReportsPage() {
                        <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
                           <Icon className="h-5 w-5" />
                        </div>
-                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{t(`stats.${stat.label}`)}</p>
+                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                         {stat.label === 'totalRevenue' ? tr('stats.totalRevenue') : t(`stats.${stat.label}`)}
+                       </p>
                     </div>
                     <div className="space-y-1">
                        <h4 className="text-3xl font-black tracking-tighter">{stat.value}</h4>
@@ -323,55 +325,6 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Vehicle Utilization Sidebar */}
-          <div className="space-y-6">
-             <div className="flex items-center gap-3 px-2">
-               <BarChart3 className="h-5 w-5 text-primary" />
-               <h2 className="text-2xl font-black text-foreground tracking-tight">{t("charts.vehicleUsage")}</h2>
-            </div>
-
-            <GlassCard className="p-8 !rounded-[2.5rem] space-y-8 h-fit">
-               <div className="space-y-6">
-                  <div className="space-y-2">
-                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2"><Bike className="h-3 w-3" /> {t("vehicles.motorcycles")}</div>
-                        <span>64%</span>
-                     </div>
-                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: "64%" }}
-                          className="h-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" 
-                        />
-                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2"><Car className="h-3 w-3" /> {t("vehicles.compactCars")}</div>
-                        <span>32%</span>
-                     </div>
-                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: "32%" }}
-                            className="h-full bg-accent shadow-[0_0_10px_hsl(var(--accent))]" 
-                        />
-                     </div>
-                  </div>
-
-                  <div className="space-y-2 opacity-40">
-                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center gap-2">{t("vehicles.trucksVans")}</div>
-                        <span>4%</span>
-                     </div>
-                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full w-[4%] bg-muted-foreground" />
-                     </div>
-                  </div>
-               </div>
-            </GlassCard>
-          </div>
       </div>
     </div>
   );
