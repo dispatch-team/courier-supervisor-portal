@@ -81,25 +81,25 @@ export default function ReportsPage() {
         label: "successRate", 
         value: `${(overall.successRate * 100).toFixed(1)}%`, 
         icon: CheckCircle2, 
-        sub: `${rev.deliveriesChangePct >= 0 ? "+" : ""}${(rev.deliveriesChangePct * 100).toFixed(1)}% deliveries` 
+        sub: t("stats.deliveriesChange", { pct: `${rev.deliveriesChangePct >= 0 ? "+" : ""}${(rev.deliveriesChangePct * 100).toFixed(1)}` })
       },
       { 
         label: "avgDeliveryTime", 
         value: formatDuration(overall.avgPickupToDeliveryMs), 
         icon: Clock, 
-        sub: "pickup → delivered" 
+        sub: t("stats.pickupToDelivery") 
       },
       { 
         label: "totalRevenue", 
         value: formatEtb(rev.totalRevenue), 
         icon: Zap, 
-        sub: `${rev.revenueChangePct >= 0 ? "+" : ""}${(rev.revenueChangePct * 100).toFixed(1)}% vs prior` 
+        sub: t("stats.revenueChange", { pct: `${rev.revenueChangePct >= 0 ? "+" : ""}${(rev.revenueChangePct * 100).toFixed(1)}` })
       },
       { 
         label: "fleetUtilization", 
         value: `${(fleet.utilizationRate * 100).toFixed(0)}%`, 
         icon: Users2, 
-        sub: `${fleet.idle} drivers idle` 
+        sub: t("stats.driversIdle", { count: fleet.idle.toString() })
       },
     ];
 

@@ -682,6 +682,10 @@ const am: Messages = {
       avgDeliveryTime: "አማካይ የማቅረቢያ ጊዜ",
       onTimePercentage: "በሰዓቱ የመድረስ መጠን",
       fleetUtilization: "የፍሊት አጠቃቀም",
+      deliveriesChange: "{pct}% አቅርቦቶች",
+      revenueChange: "{pct}% ከቀዳሚው ጋር ሲነጻጸር",
+      driversIdle: "{count} ሾፌሮች ስራ የሌላቸው",
+      pickupToDelivery: "ጭነት → ማድረስ",
     },
     charts: {
       deliveryVolume: "የዕቃ አቅርቦት መጠን አዝማሚያ",

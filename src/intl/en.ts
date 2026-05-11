@@ -684,6 +684,10 @@ const en = {
       avgDeliveryTime: "Avg. Delivery Time",
       onTimePercentage: "On-Time Ratio",
       fleetUtilization: "Fleet Utilization",
+      deliveriesChange: "{pct}% deliveries",
+      revenueChange: "{pct}% vs prior",
+      driversIdle: "{count} drivers idle",
+      pickupToDelivery: "pickup → delivered",
     },
     charts: {
       deliveryVolume: "Delivery Volume Trend",

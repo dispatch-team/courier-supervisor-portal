@@ -338,47 +338,47 @@ export default function DriverPerformancePage({
             <MetricCard
               icon={CheckCircle2}
               tone="green"
-              label="Delivered"
+              label={t("metrics.delivered")}
               value={metrics.delivered}
-              sub={`of ${metrics.total} total`}
+              sub={t("metrics.total", { count: metrics.total.toString() })}
             />
             <MetricCard
               icon={TrendingUp}
               tone="primary"
-              label="Success Rate"
+              label={t("metrics.successRate")}
               value={`${(metrics.successRate * 100).toFixed(0)}%`}
-              sub={`${metrics.delivered + metrics.failed + metrics.returned} attempts`}
+              sub={t("metrics.attempts", { count: (metrics.delivered + metrics.failed + metrics.returned).toString() })}
             />
             <MetricCard
               icon={XCircle}
               tone="red"
-              label="Failed"
+              label={t("metrics.failed")}
               value={metrics.failed}
-              sub={`${(metrics.failureRate * 100).toFixed(0)}% rate`}
+              sub={t("metrics.rate", { count: (metrics.failureRate * 100).toFixed(0).toString() })}
             />
             <MetricCard
               icon={Clock}
               tone="amber"
-              label="Avg Time"
+              label={t("metrics.avgTime")}
               value={formatDuration(metrics.avgPickupToDeliveryMs)}
-              sub="pickup → delivered"
+              sub={t("metrics.pickupToDelivery")}
             />
             <MetricCard
               icon={BarChart3}
               tone="blue"
-              label="Daily Avg"
+              label={t("metrics.dailyAvg")}
               value={metrics.deliveriesPerDay.toFixed(1)}
-              sub="deliveries / day"
+              sub={t("metrics.deliveriesPerDay")}
             />
             <MetricCard
               icon={Star}
               tone="amber"
-              label="Avg Rating"
+              label={t("metrics.avgRating")}
               value={metrics.avgRating !== null ? metrics.avgRating.toFixed(1) : "—"}
               sub={
                 driver.rating_count > 0
-                  ? `${driver.rating_count} ratings`
-                  : "no ratings yet"
+                  ? t("metrics.ratingsCount", { count: driver.rating_count.toString() })
+                  : t("metrics.noRatings")
               }
             />
           </div>

@@ -510,7 +510,7 @@ function CustomRangePicker({
         >
           <CalendarIcon className="h-3 w-3" />
              {isActive
-            ? `${customRange!.from!.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${customRange!.to!.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+            ? `${customRange!.from!.toLocaleDateString(currentLocale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric" })} – ${customRange!.to!.toLocaleDateString(currentLocale === "am" ? "am-ET" : "en-US", { month: "short", day: "numeric" })}`
             : t("presets.custom")}
         </button>
       </PopoverTrigger>

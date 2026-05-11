@@ -701,17 +701,17 @@ function WorkloadList({
                   <div
                     className="h-full bg-[hsl(var(--status-delivered))] transition-all"
                     style={{ width: `${dPct}%` }}
-                    title={`Delivered: ${w.delivered}`}
+                    title={`${t("workload.delivered")}: ${w.delivered}`}
                   />
                   <div
                     className="h-full bg-[hsl(var(--status-in-transit))] transition-all"
                     style={{ width: `${ipPct}%` }}
-                    title={`In progress: ${w.inProgress}`}
+                    title={`${t("workload.inProgress")}: ${w.inProgress}`}
                   />
                   <div
                     className="h-full bg-[hsl(var(--status-failed))] transition-all"
                     style={{ width: `${fPct}%` }}
-                    title={`Failed: ${w.failed}`}
+                    title={`${t("workload.failed")}: ${w.failed}`}
                   />
                 </div>
 
@@ -720,10 +720,10 @@ function WorkloadList({
                     {total}
                   </span>
                   {isOver && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" title="Overworked" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" title={t("recommendations.overworked.title")} />
                   )}
                   {isUnder && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Underutilized" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" title={t("recommendations.underutilized.title")} />
                   )}
                 </div>
               </button>
