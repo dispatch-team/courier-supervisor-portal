@@ -6,20 +6,28 @@ import { GlassCard } from "./GlassCard";
 
 interface RevenueChartProps {
   data: number[];
+  labels?: string[];
   className?: string;
 }
 
-export function RevenueChart({ data, className }: RevenueChartProps) {
+export function RevenueChart({ data, labels, className }: RevenueChartProps) {
   const t = useI18n("revenue");
 
   // Create SVG path for the wave
   const width = 1000;
-  const height = 200;
-  const padding = 40;
+  const height = 300; // Increased height to fit labels
+  const paddingLeft = 80; // More space for Y-axis numbers
+  const paddingBottom = 40; // Space for X-axis labels
+  const paddingRight = 40;
+  const paddingTop = 40;
   
+  const maxValue = Math.max(...data, 1);
+  const chartWidth = width - paddingLeft - paddingRight;
+  const chartHeight = height - paddingTop - paddingBottom;
+
   const points = data.map((val, i) => {
-    const x = (i / (data.length - 1)) * (width - padding * 2) + padding;
-    const y = height - ((val / Math.max(...data)) * (height - padding * 2) + padding);
+    const x = (i / (data.length - 1)) * chartWidth + paddingLeft;
+    const y = height - paddingBottom - (val / maxValue) * chartHeight;
     return { x, y };
   });
 
@@ -36,24 +44,70 @@ export function RevenueChart({ data, className }: RevenueChartProps) {
     return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${point.x} ${point.y}`;
   }, "");
 
+  // Y-axis ticks
+  const yTicks = [0, maxValue * 0.25, maxValue * 0.5, maxValue * 0.75, maxValue];
+
+  // X-axis ticks (sample them if too many)
+  const xTickIndices = labels ? [0, Math.floor(labels.length / 2), labels.length - 1] : [];
+
   return (
     <GlassCard className={className} gradient={false}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       
-      <div className="relative z-10 p-2">
-        <h3 className="text-xl font-bold text-foreground mb-8">
+      <div className="relative z-10 p-2 h-full flex flex-col">
+        <h3 className="text-xl font-bold text-foreground mb-6">
           {t("trend.title")}
         </h3>
 
-        <div className="relative w-full aspect-[5/1] min-h-[150px]">
+        <div className="relative flex-1 min-h-[250px]">
           <svg 
             viewBox={`0 0 ${width} ${height}`} 
             className="w-full h-full overflow-visible"
             preserveAspectRatio="none"
           >
-            {/* Grid Lines */}
-            <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" />
+            {/* Horizontal Grid Lines and Y-axis labels */}
+            {yTicks.map((val, i) => {
+              const y = height - paddingBottom - (val / maxValue) * chartHeight;
+              return (
+                <g key={`y-${i}`}>
+                  <line 
+                    x1={paddingLeft} 
+                    y1={y} 
+                    x2={width - paddingRight} 
+                    y2={y} 
+                    stroke="currentColor" 
+                    strokeOpacity="0.05" 
+                    strokeWidth="1" 
+                  />
+                  <text
+                    x={paddingLeft - 10}
+                    y={y + 4}
+                    textAnchor="end"
+                    className="fill-muted-foreground font-black text-[14px]"
+                  >
+                    {Math.round(val).toLocaleString()}
+                  </text>
+                </g>
+              );
+            })}
             
+            {/* X-axis labels */}
+            {labels && xTickIndices.map((idx) => {
+              const p = points[idx];
+              if (!p) return null;
+              return (
+                <text
+                  key={`x-${idx}`}
+                  x={p.x}
+                  y={height - 10}
+                  textAnchor="middle"
+                  className="fill-muted-foreground font-bold text-[12px] uppercase tracking-wider"
+                >
+                  {labels[idx]}
+                </text>
+              );
+            })}
+
             {/* Animated Path */}
             <motion.path
               d={pathData}
@@ -68,7 +122,7 @@ export function RevenueChart({ data, className }: RevenueChartProps) {
             
             {/* Gradient Fill */}
             <motion.path
-              d={`${pathData} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`}
+              d={`${pathData} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`}
               fill="url(#revenueGradient)"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.2 }}

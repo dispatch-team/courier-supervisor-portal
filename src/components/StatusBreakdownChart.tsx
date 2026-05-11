@@ -4,14 +4,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { GlassCard } from "./GlassCard";
 import { useI18n } from "@/intl";
 
-const data = [
-  { name: 'Delivered', value: 400, color: 'hsl(var(--primary))' },
-  { name: 'In Transit', value: 300, color: 'hsl(var(--accent))' },
-  { name: 'Pending', value: 200, color: 'hsl(var(--info))' },
-  { name: 'Returned', value: 50, color: 'hsl(var(--destructive))' },
-];
+interface StatusBreakdownChartProps {
+  data: { name: string; value: number; color: string }[];
+  total: number;
+}
 
-export function StatusBreakdownChart() {
+export function StatusBreakdownChart({ data, total }: StatusBreakdownChartProps) {
   const t = useI18n("reports");
 
   return (
@@ -48,7 +46,7 @@ export function StatusBreakdownChart() {
 
         {/* Legend */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <p className="text-2xl font-black text-foreground">950</p>
+          <p className="text-2xl font-black text-foreground">{total}</p>
           <p className="text-[8px] font-black uppercase text-muted-foreground">Total</p>
         </div>
       </div>
