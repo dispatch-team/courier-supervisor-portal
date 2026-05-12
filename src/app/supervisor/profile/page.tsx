@@ -247,21 +247,6 @@ export default function CourierProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Operational Zones Card */}
-          <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-xl mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                {t("operationalZones")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t("operationalZonesDesc") || "Operational zones information not available."}
-              </p>
-            </CardContent>
-          </Card>
-
           {/* Rating & Pricing Card */}
           <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-xl">
             <CardHeader>
@@ -310,24 +295,27 @@ export default function CourierProfilePage() {
 
               <div className="border-t border-border/40 pt-4">
                 <p className="text-sm text-muted-foreground mb-3">{t("rateDetails")}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("weightRate")}</span>
-                    <span className="font-medium">
-                      {profile.weight_rate > 0 ? `ETB ${profile.weight_rate}/kg` : "—"}
-                    </span>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("weightRate")}</p>
+                    <p className="font-semibold">
+                      {profile.weight_rate > 0 ? `ETB ${profile.weight_rate}` : "—"}
+                    </p>
+                    {profile.weight_rate > 0 && <p className="text-xs text-muted-foreground">per kg</p>}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("distanceRate")}</span>
-                    <span className="font-medium">
-                      {profile.distance_rate > 0 ? `ETB ${profile.distance_rate}/km` : "—"}
-                    </span>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("distanceRate")}</p>
+                    <p className="font-semibold">
+                      {profile.distance_rate > 0 ? `ETB ${profile.distance_rate}` : "—"}
+                    </p>
+                    {profile.distance_rate > 0 && <p className="text-xs text-muted-foreground">per km</p>}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("timeRate")}</span>
-                    <span className="font-medium">
-                      {profile.time_rate > 0 ? `ETB ${profile.time_rate}/min` : "—"}
-                    </span>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{t("timeRate")}</p>
+                    <p className="font-semibold">
+                      {profile.time_rate > 0 ? `ETB ${profile.time_rate}` : "—"}
+                    </p>
+                    {profile.time_rate > 0 && <p className="text-xs text-muted-foreground">per min</p>}
                   </div>
                 </div>
               </div>
