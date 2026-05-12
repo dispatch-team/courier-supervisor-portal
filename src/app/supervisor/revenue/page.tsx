@@ -487,6 +487,7 @@ function CustomRangePicker({
   onOpenChange: (open: boolean) => void;
   onApply: (range: DateRange) => void;
 }) {
+  const { locale: currentLocale } = useLocale();
   const t = useI18n("revenue");
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(customRange);
 
