@@ -35,6 +35,9 @@ interface FormState {
   last_name: string;
   email: string;
   phone_number: string;
+  vehicle_type: string;
+  license_plate: string;
+  emergency_contact: string;
   password: string;
   confirm_password: string;
   password_mode: "generate" | "custom";
@@ -46,6 +49,9 @@ const EMPTY_FORM: FormState = {
   last_name: "",
   email: "",
   phone_number: "",
+  vehicle_type: "",
+  license_plate: "",
+  emergency_contact: "",
   password: "",
   confirm_password: "",
   password_mode: "generate",
@@ -70,6 +76,9 @@ function validateForm(form: FormState): Record<string, string> {
   if (!form.phone_number.trim()) errors.phone_number = "Phone number is required";
   else if (!/^\+?\d{9,15}$/.test(form.phone_number.replace(/\s/g, "")))
     errors.phone_number = "Invalid phone format (e.g. +251911234567)";
+  if (!form.vehicle_type.trim()) errors.vehicle_type = "Vehicle type is required";
+  if (!form.license_plate.trim()) errors.license_plate = "License plate is required";
+  if (!form.emergency_contact.trim()) errors.emergency_contact = "Emergency contact is required";
 
   const pwError = validatePassword(form.password);
   if (pwError) errors.password = pwError;
@@ -118,6 +127,9 @@ export function CreateDriverDialog({
         last_name: form.last_name.trim(),
         email: form.email.trim(),
         phone_number: form.phone_number.replace(/\s/g, ""),
+        vehicle_type: form.vehicle_type.trim(),
+        license_plate: form.license_plate.trim(),
+        emergency_contact: form.emergency_contact.trim(),
         password: form.password,
       },
       {
@@ -228,6 +240,34 @@ export function CreateDriverDialog({
                   type="tel"
                 />
               </div>
+
+              {/* Vehicle & License Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <Field
+                  label="Vehicle Type *"
+                  value={form.vehicle_type}
+                  onChange={(v) => updateField("vehicle_type", v)}
+                  error={errors.vehicle_type}
+                  placeholder="Motorcycle, Car, Van..."
+                />
+                <Field
+                  label="License Plate *"
+                  value={form.license_plate}
+                  onChange={(v) => updateField("license_plate", v)}
+                  error={errors.license_plate}
+                  placeholder="AA-12345"
+                />
+              </div>
+
+              {/* Emergency Contact */}
+              <Field
+                label="Emergency Contact *"
+                value={form.emergency_contact}
+                onChange={(v) => updateField("emergency_contact", v)}
+                error={errors.emergency_contact}
+                placeholder="+251911234567"
+                type="tel"
+              />
 
               {/* Password Mode Toggle */}
               <div className="space-y-3">

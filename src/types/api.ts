@@ -23,6 +23,9 @@ export interface Driver {
   additional_documents_id: string | null;
   rating_aggregate: number;
   rating_count: number;
+  vehicle_type: string;
+  license_plate: string;
+  emergency_contact: string;
 }
 
 // ─── Shipment ────────────────────────────────────────────

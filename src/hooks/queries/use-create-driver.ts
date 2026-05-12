@@ -10,6 +10,9 @@ export interface CreateDriverPayload {
   last_name: string;
   email: string;
   phone_number: string;
+  vehicle_type: string;
+  license_plate: string;
+  emergency_contact: string;
   password: string;
 }
 
