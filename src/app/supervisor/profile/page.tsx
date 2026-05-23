@@ -263,7 +263,7 @@ export default function CourierProfilePage() {
                     <Star className="h-4 w-4 text-yellow-500" />
                     <p className="font-medium">
                       {profile.rating_aggregate > 0
-                        ? `${profile.rating_aggregate.toFixed(1)} / 5`
+                        ? `${(profile.rating_aggregate / 2).toFixed(1)} / 5`
                         : "—"}
                       {profile.rating_count > 0 && (
                         <span className="text-sm text-muted-foreground ml-1">

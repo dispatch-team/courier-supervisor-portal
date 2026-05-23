@@ -298,7 +298,7 @@ export default function DriversPage() {
                     {driver.rating_aggregate > 0 ? (
                       <div className="flex items-center gap-1 text-sm">
                         <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                        <span>{driver.rating_aggregate.toFixed(1)}</span>
+                        <span>{(driver.rating_aggregate / 2).toFixed(1)}</span>
                         <span className="text-xs text-muted-foreground">
                           ({driver.rating_count})
                         </span>

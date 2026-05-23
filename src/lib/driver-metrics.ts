@@ -98,7 +98,7 @@ export function computeDriverMetrics(
   const ratedDeliveries = delivered.filter((s) => s.rating > 0);
   const avgRating =
     ratedDeliveries.length > 0
-      ? ratedDeliveries.reduce((sum, s) => sum + s.rating, 0) / ratedDeliveries.length
+      ? ratedDeliveries.reduce((sum, s) => sum + s.rating, 0) / ratedDeliveries.length / 2
       : null;
 
   return {

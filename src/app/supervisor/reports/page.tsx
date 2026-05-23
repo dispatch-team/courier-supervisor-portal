@@ -125,7 +125,7 @@ export default function ReportsPage() {
           name: `${d.first_name} ${d.last_name}`,
           trips: w.delivered,
           success: Number(success.toFixed(1)),
-          rating: d.rating_aggregate > 0 ? Number(d.rating_aggregate.toFixed(1)) : 0,
+          rating: d.rating_aggregate > 0 ? Number((d.rating_aggregate / 2).toFixed(1)) : 0,
           avatar: `${d.first_name[0]}${d.last_name[0]}`,
           color: colors[idx % colors.length],
         };
