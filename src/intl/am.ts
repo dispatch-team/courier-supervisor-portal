@@ -109,7 +109,7 @@ const am: Messages = {
       description: "Shipmentዎችን ፍጠር፣ ኩሪየሮችን አወዳድር፣ እና ዕቃ አቅርቦቶችን ክትተለ።",
     },
     supervisor: {
-      title: "የኩሪየር ተቆጣጣሪ",
+      title: "የኩሪየር ሱፐርቫይዘር",
       description: "ሾፌሮችን አስተዳድር፣ Shipmentዎችን ምደብ፣ እና ፍሊቱን ክትተለ።",
     },
     admin: {
@@ -132,7 +132,7 @@ const am: Messages = {
   footer: {
     copyright: "© 2026 Dispatch. ለአዲስ አበባ የተሰራ።",
     merchant: "ነጋዴ",
-    supervisor: "ተቆጣጣሪ",
+    supervisor: "ሱፐርቫይዘር",
     downloadDriverApp: "የሾፌር መተግበሪያ አውርድ",
     admin: "አስተዳዳሪ",
   },
@@ -157,7 +157,7 @@ const am: Messages = {
         subtitle: "Shipmentዎችን ያስተዳድሩ እና ዕቃ አቅርቦቶችን ይከታተሉ",
       },
       supervisor: {
-        label: "የኩሪየር ተቆጣጣሪ",
+        label: "የኩሪየር ሱፐርቫይዘር",
         subtitle: "ሾፌሮችን እና የፍሊት ስራዎችን ያስተዳድሩ",
       },
       admin: {
@@ -186,8 +186,8 @@ const am: Messages = {
       welcome: "ወደ Dispatch የነጋዴ መግቢያ እንኳን ደህና ተመለሱ።",
     },
     supervisor: {
-      title: "የኩሪየር ተቆጣጣሪ ዳሽቦርድ",
-      welcome: "ወደ Dispatch የተቆጣጣሪ መግቢያ እንኳን ደህና ተመለሱ።",
+      title: "የኩሪየር ሱፐርቫይዘር ዳሽቦርድ",
+      welcome: "ወደ Dispatch የሱፐርቫይዘር መግቢያ እንኳን ደህና ተመለሱ።",
     },
     admin: {
       title: "የአስተዳዳሪ ዳሽቦርድ",
@@ -293,9 +293,79 @@ const am: Messages = {
     fleet: "ፍሊት",
     revenue: "ገቢ",
     reports: "ሪፖርቶች",
+    supervisors: "ሱፐርቫይዘሮች",
     settings: "መቼቶች",
     logOut: "ውጣ",
-    roleTitle: "የጭነት ሱፐርቫይዘር",
+    roleTitle: "የኩሪየር ሱፐርቫይዘር",
+  },
+
+  supervisors: {
+    title: "ሱፐርቫይዘሮች",
+    subtitle: "የኩሪየር ኩባንያ ሱፐርቫይዘሮችን ያስተዳድሩ",
+    addSupervisor: "ሱፐርቫይዘር ጨምር",
+    ownerBadge: "ባለቤት",
+    youBadge: "እርስዎ",
+    loading: "ሱፐርቫይዘሮችን በመጫን ላይ...",
+    retry: "እንደገና ሞክር",
+    cancel: "ተው",
+    close: "ዝጋ",
+    editAction: "አርትዕ",
+    deleteAction: "ሰርዝ",
+    table: {
+      name: "ስም",
+      email: "ኢሜይል",
+      phone: "ስልክ",
+      status: "ሁኔታ",
+      actions: "ድርጊቶች",
+    },
+    status: {
+      active: "ንቁ",
+      inactive: "ንቁ ያልሆነ",
+      pending: "በመጠባበቅ ላይ",
+    },
+    create: {
+      title: "ሱፐርቫይዘር ጨምር",
+      description: "ለኩሪየር ኩባንያዎ አዲስ ሱፐርቫይዘር ይፍጠሩ።",
+      firstName: "የመጀመሪያ ስም",
+      middleName: "የአባት ስም",
+      lastName: "የቤተሰብ ስም",
+      email: "ኢሜይል",
+      phone: "ስልክ ቁጥር",
+      password: "የሚስጥር ቁጥር",
+      generating: "እየፈጠረ...",
+      regenerate: "እንደገና ፍጠር",
+      firstNamePlaceholder: "ዮሃንስ",
+      middleNamePlaceholder: "አማራጭ",
+      lastNamePlaceholder: "ተስፋዬ",
+      emailPlaceholder: "yohannes@example.com",
+      phonePlaceholder: "+251911234567",
+      submit: "ሱፐርቫይዘር ፍጠር",
+      submitting: "እየተፈጠረ...",
+      success: "ሱፐርቫይዘር በተሳካ ሁኔታ ተፈጥሯል።",
+    },
+    edit: {
+      title: "ሱፐርቫይዘር አርትዕ",
+      description: "የሱፐርቫይዘር መረጃ ያዘምኑ።",
+      firstName: "የመጀመሪያ ስም",
+      middleName: "የአባት ስም",
+      lastName: "የቤተሰብ ስም",
+      email: "ኢሜይል",
+      phone: "ስልክ ቁጥር",
+      status: "ሁኔታ",
+      submit: "ለውጦችን አስቀምጥ",
+      submitting: "እየተቀመጠ...",
+      success: "ሱፐርቫይዘር በተሳካ ሁኔታ ተዘምኗል።",
+    },
+    delete: {
+      title: "ሱፐርቫይዘር ሰርዝ",
+      description: "ይህ የሱፐርቫይዘር መለያን በቋሚነት ያስወግዳል። ይህ ድርጊት መቀልበስ አይቻልም።",
+      confirm: "ይህ መቀልበስ እንደማይቻል ተረድቻለሁ",
+      submit: "ሱፐርቫይዘር ሰርዝ",
+      submitting: "እየተሰረዘ...",
+      success: "ሱፐርቫይዘር በተሳካ ሁኔታ ተሰርዟል።",
+    },
+    empty: "ምንም ሱፐርቫይዘሮች አልተገኙም።",
+    errorLoad: "ሱፐርቫይዘሮችን መጫን አልተሳካም።",
   },
 
   // ─── Shipments Management ───────────────────────────────────────────────────
@@ -662,7 +732,7 @@ const am: Messages = {
 
   settings: {
     title: "ቅንጅቶች",
-    subtitle: "በሱፐርቫይዘር ፖርታል ላይ ያለዎትን ልምድ ያብጁ",
+    subtitle: "በሱፐርቫይዘር መግቢያ ላይ ያለዎትን ልምድ ያብጁ",
     language: {
       title: "ቋንቋ",
       description: "ለሜኑዎች፣ ለጽሁፎች እና ለመልእክቶች የሚሆን ቋንቋ ይምረጡ። ምርጫዎ በዚህ መሣሪያ ላይ ይቀመጣል።",

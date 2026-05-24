@@ -99,6 +99,20 @@ export interface ShipmentListResponse {
   shipments: Shipment[];
 }
 
+// ─── Supervisor ──────────────────────────────────────────
+
+export interface Supervisor {
+  id: number;
+  keycloak_id: string;
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  courier_company_id: number;
+  status: "active" | "inactive" | "pending";
+}
+
 // ─── Courier Company ────────────────────────────────────
 
 export interface CourierCompany {

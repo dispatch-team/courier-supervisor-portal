@@ -25,8 +25,7 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    const buf = await request.arrayBuffer();
-    init.body = Buffer.from(buf);
+    init.body = await request.text();
   }
 
   try {

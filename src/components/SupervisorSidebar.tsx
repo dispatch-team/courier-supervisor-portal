@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Settings,
   User as UserIcon,
-  Activity
+  Activity,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -31,6 +32,7 @@ const NAV_ICONS = [
   { id: "fleet", href: "/supervisor/fleet", icon: Activity },
   { id: "revenue", href: "/supervisor/revenue", icon: CircleDollarSign },
   { id: "reports", href: "/supervisor/reports", icon: FileText },
+  { id: "supervisors", href: "/supervisor/supervisors", icon: UserCog },
 ];
 
 export function SupervisorSidebar() {
