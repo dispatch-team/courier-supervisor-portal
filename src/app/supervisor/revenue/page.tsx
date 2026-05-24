@@ -46,6 +46,8 @@ import { DriverAvatar } from "@/components/DriverAvatar";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
+import { useApi } from "@/hooks/use-api";
+import type { Shipment, ShipmentListResponse } from "@/types/api";
 import {
   computeRevenueMetrics,
   formatEtb,
@@ -92,6 +94,7 @@ const getRevenueChartConfig = (t: any): ChartConfig => ({
 export default function RevenuePage() {
   const router = useRouter();
   const { companyId, isLoading: companyLoading } = useCompanyId();
+  const api = useApi();
   const { locale: currentLocale } = useLocale();
   const t = useI18n("revenue");
   
@@ -144,7 +147,33 @@ export default function RevenuePage() {
     if (!metrics) return;
     setExporting(format);
     try {
-      const ctx = { metrics, rangeStart: start, rangeEnd: end };
+      // Paginate through all shipments for the period (backend caps at 100/page)
+      const allShipments: Shipment[] = [];
+      let page = 1;
+      while (true) {
+        const qs = new URLSearchParams({
+          created_at_start: start.toISOString(),
+          created_at_end: end.toISOString(),
+          page: String(page),
+          page_size: "100",
+        }).toString();
+        const res = await api.get<ShipmentListResponse>(`shipments?${qs}`);
+        allShipments.push(...(res.shipments ?? []));
+        if (allShipments.length >= res.total || (res.shipments ?? []).length < 100) break;
+        page++;
+      }
+
+      const profileRaw = await api.get<{ company_name?: string }>("couriers/profile").catch(() => ({}));
+      const companyName = (profileRaw as any)?.company_name ?? undefined;
+
+      const ctx = {
+        metrics,
+        rangeStart: start,
+        rangeEnd: end,
+        companyName,
+        shipments: allShipments,
+        drivers: drivers ?? [],
+      };
       if (format === "pdf") await exportRevenueReportPdf(ctx);
       else await exportRevenueReportExcel(ctx);
     } finally {

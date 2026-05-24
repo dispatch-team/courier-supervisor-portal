@@ -2,22 +2,33 @@
 
 import { useI18n, useLocale } from "@/intl";
 import { motion } from "framer-motion";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { GlassCard } from "@/components/GlassCard";
 import { RevenueChart } from "@/components/RevenueChart";
 import { StatusBreakdownChart } from "@/components/StatusBreakdownChart";
-import { 
-  Trophy, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Trophy,
+  Clock,
+  CheckCircle2,
   Download,
   Users2,
   Zap,
   Star,
   ChevronRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  FileSpreadsheet,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportOperationsReportPdf, exportOperationsReportExcel } from "@/lib/operations-report";
+import { useApi } from "@/hooks/use-api";
+import type { Shipment, ShipmentListResponse } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useShipments } from "@/hooks/queries/use-shipments";
@@ -48,6 +59,8 @@ export default function ReportsPage() {
   const tr = useI18n("revenue");
   const { locale } = useLocale();
   const { companyId, isLoading: companyLoading } = useCompanyId();
+  const api = useApi();
+  const [exporting, setExporting] = useState<"pdf" | "excel" | null>(null);
   
   const { start, end, priorStart, priorEnd } = useMemo(() => getPeriodRanges(), []);
 
@@ -151,6 +164,43 @@ export default function ReportsPage() {
     };
   }, [drivers, currentShipments, priorShipments, start, end, ts, formatDuration]);
 
+  const handleExport = async (format: "pdf" | "excel") => {
+    if (!stats) return;
+    setExporting(format);
+    try {
+      // Paginate all shipments — no artificial cap
+      const allShipments: Shipment[] = [];
+      let page = 1;
+      while (true) {
+        const qs = new URLSearchParams({
+          created_at_start: toApiDate(start),
+          created_at_end: toApiDate(end, true),
+          page: String(page),
+          page_size: "100",
+        }).toString();
+        const res = await api.get<ShipmentListResponse>(`shipments?${qs}`);
+        allShipments.push(...(res.shipments ?? []));
+        if (allShipments.length >= res.total || (res.shipments ?? []).length < 100) break;
+        page++;
+      }
+      const profileRaw = await api.get<{ company_name?: string }>("couriers/profile").catch(() => ({}));
+      const companyName = (profileRaw as any)?.company_name ?? undefined;
+      const fleet = computeFleetMetrics(drivers ?? [], allShipments);
+      const ctx = {
+        fleet,
+        rangeStart: start,
+        rangeEnd: end,
+        companyName,
+        shipments: allShipments,
+        drivers: drivers ?? [],
+      };
+      if (format === "pdf") await exportOperationsReportPdf(ctx);
+      else await exportOperationsReportExcel(ctx);
+    } finally {
+      setExporting(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -191,14 +241,33 @@ export default function ReportsPage() {
           </p>
         </motion.div>
 
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 bg-foreground text-background font-black px-6 py-3 rounded-2xl shadow-xl hover:shadow-primary/20 transition-all uppercase text-xs tracking-widest"
-        >
-          <Download className="h-4 w-4" />
-          {t("export")}
-        </motion.button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              disabled={exporting !== null}
+              className="flex items-center gap-2 bg-foreground text-background font-black px-6 py-3 rounded-2xl shadow-xl hover:shadow-primary/20 transition-all uppercase text-xs tracking-widest disabled:opacity-60"
+            >
+              {exporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {t("export")}
+            </motion.button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={() => handleExport("pdf")} className="gap-2">
+              <FileText className="h-4 w-4 text-red-400" />
+              <span className="text-sm">PDF Report</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport("excel")} className="gap-2">
+              <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
+              <span className="text-sm">Excel Report</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Key Metrics Grid */}
