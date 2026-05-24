@@ -12,7 +12,6 @@ import {
   Shield,
   Eye,
   EyeOff,
-  ArrowLeft,
   AlertCircle,
   Loader2,
 } from "lucide-react";
@@ -184,9 +183,6 @@ export default function LoginPage() {
   };
 
   const Icon = ROLE_ICONS[role];
-  const otherRoles = (Object.keys(ROLE_ICONS) as RoleKey[]).filter(
-    (k) => k !== role
-  );
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -214,26 +210,17 @@ export default function LoginPage() {
 
       {/* Right panel: form */}
       <div className="flex-1 flex items-center justify-center p-6 relative">
-        {/* Top bar: back link + controls */}
-        <div className="absolute top-5 left-6 right-6 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("back")}
-          </Link>
-          <div className="flex items-center gap-0.5">
-            <LanguageSwitcher />
-            <ThemeToggle />
-          </div>
+        {/* Top bar: controls */}
+        <div className="absolute top-5 right-6 flex items-center gap-0.5">
+          <LanguageSwitcher />
+          <ThemeToggle />
         </div>
 
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <Link href="/" className="lg:hidden flex justify-center mb-10">
+          <div className="lg:hidden flex justify-center mb-10">
             <img src={dispatchLogo.src} alt="Dispatch" className="h-20 w-auto" />
-          </Link>
+          </div>
 
           {/* Role header */}
           <div className="flex items-center gap-3 mb-8">
@@ -367,29 +354,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Switch portal */}
-          <div className="mt-10 pt-6 border-t border-border/40">
-            <p className="text-[11px] text-muted-foreground/60 mb-3 text-center uppercase tracking-wider">
-              {t("switchPortal")}
-            </p>
-            <div className="flex justify-center gap-1.5 flex-wrap">
-              {otherRoles.map((key) => {
-                const OtherIcon = ROLE_ICONS[key];
-                return (
-                  <Link key={key} href={`/login/${key}`}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg h-8"
-                    >
-                      <OtherIcon className="h-3.5 w-3.5" />
-                      {t(`roles.${key}.label`)}
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </div>
     </div>
