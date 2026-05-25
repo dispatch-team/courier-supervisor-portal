@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
@@ -20,7 +20,7 @@ function validateEmail(val: string): string | null {
   return null;
 }
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
   const t = useI18n("forgotPassword");
   const searchParams = useSearchParams();
 
@@ -203,5 +203,13 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }
