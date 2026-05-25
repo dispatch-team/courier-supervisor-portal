@@ -1,5 +1,6 @@
 "use client";
 
+import { friendlyError } from "@/lib/api-client";
 import { useI18n } from "@/intl";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -241,7 +242,7 @@ export default function ShipmentsPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
         <h3 className="text-lg font-semibold mb-2">Failed to load shipments</h3>
-        <p className="text-muted-foreground mb-4">{error.message}</p>
+        <p className="text-muted-foreground mb-4">{friendlyError(error)}</p>
         <Button onClick={() => refetch()}>Try Again</Button>
       </div>
     );

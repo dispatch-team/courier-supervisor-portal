@@ -1,5 +1,31 @@
 type TokenGetter = () => Promise<string | null>;
 
+const STATUS_MESSAGES: Record<number, string> = {
+  400: "The request was invalid. Please check your input and try again.",
+  401: "Your session has expired. Please sign in again.",
+  403: "You don't have permission to perform this action.",
+  404: "The requested resource was not found.",
+  409: "This action conflicts with existing data. Please refresh and try again.",
+  422: "The submitted data could not be processed. Please check your input.",
+  429: "Too many requests. Please wait a moment and try again.",
+  500: "Something went wrong on our end. Please try again.",
+  502: "Service temporarily unavailable. Please try again in a moment.",
+  503: "Service is currently down for maintenance. Please try again later.",
+  504: "The server took too long to respond. Please try again.",
+};
+
+export function friendlyError(err: unknown): string {
+  if (err instanceof ApiError) {
+    return STATUS_MESSAGES[err.status] ?? "An unexpected error occurred. Please try again.";
+  }
+  if (err instanceof Error) {
+    if (err.message.toLowerCase().includes("network") || err.message.toLowerCase().includes("fetch")) {
+      return "Unable to reach the server. Check your connection and try again.";
+    }
+  }
+  return "An unexpected error occurred. Please try again.";
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,

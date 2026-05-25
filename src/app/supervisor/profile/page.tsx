@@ -23,9 +23,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/intl";
 import {
   type NormalizedCourierProfile,
-  courierApiErrorMessage,
   isProfileIncomplete,
 } from "@/lib/courierProfile";
+import { ApiError, friendlyError } from "@/lib/api-client";
 import dispatchLogo from "@/assets/dispatch-logo.png";
 
 export default function CourierProfilePage() {
@@ -54,12 +54,10 @@ export default function CourierProfilePage() {
         const data = await res.json();
         setProfile(data);
       } else {
-        const body = await res.json().catch(() => ({}));
-        setError(courierApiErrorMessage(body));
+        setError(friendlyError(new ApiError(res.status, {})));
       }
     } catch (err) {
-      console.error("Failed to fetch courier profile:", err);
-      setError("Failed to load profile");
+      setError(friendlyError(err));
     } finally {
       setIsLoading(false);
     }

@@ -1,5 +1,6 @@
 "use client";
 
+import { friendlyError } from "@/lib/api-client";
 import { useState } from "react";
 import {
   Dialog,
@@ -148,7 +149,7 @@ export function AssignDriverDialog({
               <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
                 <p className="text-sm text-destructive">
-                  {assignMutation.error?.message ?? "Failed to assign driver"}
+                  {friendlyError(assignMutation.error)}
                 </p>
               </div>
             )}

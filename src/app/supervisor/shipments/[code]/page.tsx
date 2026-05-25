@@ -1,5 +1,6 @@
 "use client";
 
+import { friendlyError } from "@/lib/api-client";
 import { use, useMemo } from "react";
 import { useI18n } from "@/intl";
 import { useRouter } from "next/navigation";
@@ -130,7 +131,7 @@ export default function ShipmentDetailPage({
         <h3 className="text-lg font-semibold mb-2">
           {is404 ? t("details.notFound") : is403 ? t("details.accessDenied") : t("details.failedLoad")}
         </h3>
-        <p className="text-muted-foreground mb-4">{error.message}</p>
+        <p className="text-muted-foreground mb-4">{friendlyError(error)}</p>
         <Button onClick={() => router.push("/supervisor/shipments")}>
           {t("details.backToShipments")}
         </Button>

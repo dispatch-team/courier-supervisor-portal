@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "@/hooks/use-api";
-import { ApiError } from "@/lib/api-client";
+import { ApiError, friendlyError } from "@/lib/api-client";
 import type { ShipmentDetail } from "@/types/api";
 
 export interface BatchResult {
@@ -31,8 +31,7 @@ export function useBatchAssignDriver() {
           });
           results.push({ code, success: true });
         } catch (err) {
-          const message =
-            err instanceof ApiError ? err.message : "Unknown error";
+          const message = friendlyError(err);
           results.push({ code, success: false, error: message });
         }
       }

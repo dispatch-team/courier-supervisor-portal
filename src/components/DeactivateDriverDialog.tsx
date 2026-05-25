@@ -1,5 +1,6 @@
 "use client";
 
+import { friendlyError } from "@/lib/api-client";
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -137,7 +138,7 @@ export function DeactivateDriverDialog({
               {/* Mutation error */}
               {updateMutation.isError && (
                 <p className="text-sm text-destructive">
-                  {updateMutation.error?.message ?? "Failed to deactivate driver"}
+                  {friendlyError(updateMutation.error)}
                 </p>
               )}
             </div>
