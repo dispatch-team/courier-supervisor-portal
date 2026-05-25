@@ -155,8 +155,10 @@ export default function FleetUtilizationPage() {
   );
 
   const formatHour = (h: number) => {
-    const ampm = h >= 12 ? "PM" : "AM";
-    const display = h % 12 === 0 ? 12 : h % 12;
+    const n = Number(h);
+    if (isNaN(n)) return "";
+    const ampm = n >= 12 ? "PM" : "AM";
+    const display = n % 12 === 0 ? 12 : n % 12;
     return `${display}${ampm}`;
   };
 
@@ -276,12 +278,19 @@ export default function FleetUtilizationPage() {
                 <YAxis hide />
                 <ChartTooltip
                   cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
-                  content={
-                    <ChartTooltipContent
-                      indicator="dot"
-                      labelFormatter={(label: number) => formatHour(label)}
-                    />
-                  }
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    return (
+                      <div className="rounded-lg border bg-background px-3 py-2 shadow-sm text-xs">
+                        <p className="font-medium mb-1">{formatHour(Number(label))}</p>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <span className="h-2 w-2 rounded-full bg-primary inline-block" />
+                          <span>Shipments:</span>
+                          <span className="font-medium text-foreground">{payload[0]?.value}</span>
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
                 <Bar dataKey="count" fill="var(--color-count)" radius={[3, 3, 0, 0]} />
               </BarChart>
