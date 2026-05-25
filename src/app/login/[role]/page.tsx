@@ -294,7 +294,7 @@ export default function LoginPage() {
                   {t("passwordLabel")}
                 </Label>
                 <Link
-                  href="/forgot-password"
+                  href={`/forgot-password${email.trim() ? `?email=${encodeURIComponent(email.trim())}` : ""}`}
                   className="text-xs text-primary/70 hover:text-primary transition-colors"
                 >
                   {t("forgotPassword")}

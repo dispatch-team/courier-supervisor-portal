@@ -779,6 +779,24 @@ const am: Messages = {
     export: "ሙሉ ሪፖርት አውርድ",
   },
 
+  // ─── Forgot Password ────────────────────────────────────────────────────────
+  forgotPassword: {
+    panelTitle: "የይለፍ ቃልዎን ዳግም ያስጀምሩ",
+    panelSubtitle: "ወደ ኢሜልዎ አስተማማኝ ማገናኛ እንልካለን።",
+    title: "የይለፍ ቃል ረሳህ?",
+    subtitle: "ሊንክ ወደ ኢሜልዎ እናስተላልፋለን",
+    description: "ከሒሳብዎ ጋር የተያያዘውን የኢሜይል አድራሻ ያስገቡ፤ የይለፍ ቃል ዳግም ማስጀመሪያ ሊንክ እናስተላልፋለን።",
+    emailLabel: "ኢሜይል",
+    emailPlaceholder: "you@example.com",
+    submit: "ሊንክ ላክ",
+    sending: "በመላክ ላይ...",
+    backToLogin: "ወደ መግቢያ ተመለስ",
+    successTitle: "ኢሜልዎን ያረጋግጡ",
+    successBody: "የይለፍ ቃል ዳግም ማስጀመሪያ ሊንክ ወደ {email} ተልኳል። ካላዩ የ spam ፎልደርዎን ይፈትሹ።",
+    errorNotFound: "በዚያ ኢሜይል አድራሻ ምንም ሒሳብ አልተገኘም።",
+    errorGeneric: "የሆነ ችግር ተፈጥሯል። በኋላ እንደገና ይሞክሩ።",
+  },
+
   // ─── Common ─────────────────────────────────────────────────────────────────
   common: {
     language: "ቋንቋ",

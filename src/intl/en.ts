@@ -781,6 +781,24 @@ const en = {
     export: "Export Full Report",
   },
 
+  // ─── Forgot Password ────────────────────────────────────────────────────────
+  forgotPassword: {
+    panelTitle: "Reset your password",
+    panelSubtitle: "We'll send a secure link to your email so you can choose a new password.",
+    title: "Forgot password?",
+    subtitle: "We'll email you a reset link",
+    description: "Enter the email address associated with your account and we'll send you a password reset link.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@example.com",
+    submit: "Send Reset Link",
+    sending: "Sending...",
+    backToLogin: "Back to Login",
+    successTitle: "Check your inbox",
+    successBody: "A password reset link has been sent to {email}. Check your spam folder if you don't see it.",
+    errorNotFound: "No account found with that email address.",
+    errorGeneric: "Something went wrong. Please try again later.",
+  },
+
   // ─── Common ─────────────────────────────────────────────────────────────────
   common: {
     language: "Language",
