@@ -248,14 +248,15 @@ export default function DriversPage() {
                 <TableRow
                   key={driver.id}
                   data-state={isSelected ? "selected" : undefined}
+                  onClick={() => router.push(`/supervisor/drivers/${driver.id}/performance`)}
                   className={cn(
-                    "group/row transition-all duration-150",
+                    "group/row transition-all duration-150 cursor-pointer",
                     "hover:bg-primary/[0.04] hover:shadow-[inset_2px_0_0_0_hsl(var(--primary))]",
                     "data-[state=selected]:bg-primary/[0.06]",
                     "animate-in fade-in-50 slide-in-from-bottom-1 duration-300",
                   )}
                 >
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={(checked) => {
@@ -308,7 +309,7 @@ export default function DriversPage() {
                       <span className="text-sm text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
