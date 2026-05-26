@@ -196,7 +196,7 @@ export function SupervisorSidebar() {
                 transition={{ duration: 0.2, ease: "easeInOut" }}
                 className="overflow-hidden"
               >
-                <div className={cn("flex gap-1 pt-2", isCollapsed ? "flex-col items-center" : "pl-3")}>
+                <div className={cn("flex items-center pt-2", isCollapsed ? "flex-col gap-2" : "justify-between w-full px-1")}>
                   {/* Language picker */}
                   <Popover>
                     <PopoverTrigger asChild>
