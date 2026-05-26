@@ -101,7 +101,7 @@ const getVolumeConfig = (t: any): ChartConfig => ({
 
 const getStatusConfig = (intl: any): ChartConfig => ({
   delivered: { label: intl("status.delivered"), color: "hsl(var(--status-delivered))" },
-  inProgress: { label: intl("status.inTransit"), color: "hsl(var(--status-in-transit))" },
+  inProgress: { label: intl("status.in_transit"), color: "hsl(var(--status-in-transit))" },
   failed: { label: intl("status.failed"), color: "hsl(var(--status-failed))" },
   returned: { label: intl("status.returned"), color: "hsl(var(--status-pending))" },
   cancelled: { label: intl("status.cancelled"), color: "hsl(var(--status-cancelled))" },

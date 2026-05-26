@@ -146,7 +146,7 @@ export default function ReportsPage() {
 
     const statusData = [
       { name: ts("status.delivered"), value: overall.delivered, color: 'hsl(var(--status-delivered))' },
-      { name: ts("status.inTransit"), value: overall.inProgress, color: 'hsl(var(--status-in-transit))' },
+      { name: ts("status.in_transit"), value: overall.inProgress, color: 'hsl(var(--status-in-transit))' },
       { name: ts("status.failed"), value: overall.failed, color: 'hsl(var(--status-failed))' },
       { name: ts("status.returned"), value: overall.returned, color: 'hsl(var(--status-pending))' },
     ].filter(d => d.value > 0);
