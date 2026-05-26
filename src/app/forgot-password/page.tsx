@@ -17,6 +17,7 @@ type State = "idle" | "loading" | "success" | "error";
 function validateEmail(val: string): string | null {
   if (!val.trim()) return "Email is required.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) return "Please enter a valid email address.";
+  if (val.trim().length > 255) return "Email must be under 255 characters.";
   return null;
 }
 

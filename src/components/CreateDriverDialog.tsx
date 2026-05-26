@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Shuffle } from "lucide-react";
 import { useCreateDriver } from "@/hooks/queries/use-create-driver";
+import { validateName, validateEmail, validatePhone, validatePassword as validatePw } from "@/lib/validation";
 
 interface CreateDriverDialogProps {
   courierCompanyId: number | undefined;
@@ -73,35 +74,31 @@ const EMPTY_FORM: FormState = {
   password_mode: "generate",
 };
 
-function validatePassword(password: string): string | null {
-  if (!password) return "Password is required";
-  if (password.length < 8) return "Must be at least 8 characters";
-  if (!/[A-Z]/.test(password)) return "Must include an uppercase letter";
-  if (!/[a-z]/.test(password)) return "Must include a lowercase letter";
-  if (!/[0-9]/.test(password)) return "Must include a number";
-  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) return "Must include a special character";
-  return null;
-}
-
 function validateForm(form: FormState): Record<string, string> {
   const errors: Record<string, string> = {};
-  if (!form.first_name.trim()) errors.first_name = "First name is required";
-  if (!form.last_name.trim()) errors.last_name = "Last name is required";
-  if (!form.email.trim()) errors.email = "Email is required";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = "Invalid email format";
-  if (!form.phone_number.trim()) errors.phone_number = "Phone number is required";
-  else if (!/^\+?\d{9,15}$/.test(form.phone_number.replace(/\s/g, "")))
-    errors.phone_number = "Invalid phone format (e.g. +251911234567)";
+
+  const fnErr = validateName(form.first_name, "First name");
+  if (fnErr) errors.first_name = fnErr;
+  const lnErr = validateName(form.last_name, "Last name");
+  if (lnErr) errors.last_name = lnErr;
+
+  const emailErr = validateEmail(form.email);
+  if (emailErr) errors.email = emailErr;
+
+  const phoneErr = validatePhone(form.phone_number);
+  if (phoneErr) errors.phone_number = phoneErr;
+
+  const ecErr = validatePhone(form.emergency_contact);
+  if (ecErr) errors.emergency_contact = ecErr;
+
   if (!form.vehicle_type.trim()) errors.vehicle_type = "Vehicle type is required";
   if (!form.license_plate.trim()) errors.license_plate = "License plate is required";
-  if (!form.emergency_contact.trim()) errors.emergency_contact = "Emergency contact is required";
 
-  const pwError = validatePassword(form.password);
-  if (pwError) errors.password = pwError;
+  const pwErr = validatePw(form.password);
+  if (pwErr) errors.password = pwErr;
 
-  if (form.password_mode === "custom" && form.password && form.confirm_password !== form.password) {
+  if (form.password_mode === "custom" && form.password && form.confirm_password !== form.password)
     errors.confirm_password = "Passwords do not match";
-  }
 
   return errors;
 }
@@ -252,7 +249,7 @@ export function CreateDriverDialog({
                   value={form.phone_number}
                   onChange={(v) => updateField("phone_number", v)}
                   error={errors.phone_number}
-                  placeholder="+251911234567"
+                  placeholder="09XXXXXXXX or +2519XXXXXXXX"
                   type="tel"
                 />
               </div>
@@ -281,7 +278,7 @@ export function CreateDriverDialog({
                 value={form.emergency_contact}
                 onChange={(v) => updateField("emergency_contact", v)}
                 error={errors.emergency_contact}
-                placeholder="+251911234567"
+                placeholder="09XXXXXXXX or +2519XXXXXXXX"
                 type="tel"
               />
 

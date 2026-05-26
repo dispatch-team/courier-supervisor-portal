@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useUpdateSupervisor } from "@/hooks/queries/use-update-supervisor";
+import { validateName, validateEmail, validatePhone } from "@/lib/validation";
 import type { Supervisor } from "@/types/api";
 import { useI18n } from "@/intl";
 
@@ -65,11 +66,11 @@ export function EditSupervisorDialog({ supervisor, companyId, open, onOpenChange
 
   function validate(): boolean {
     const e: Record<string, string> = {};
-    if (!form.first_name.trim()) e.first_name = "First name is required";
-    if (!form.last_name.trim()) e.last_name = "Last name is required";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email format";
-    if (form.phone_number && !/^\+\d{9,14}$/.test(form.phone_number.replace(/\s/g, "")))
-      e.phone_number = "Must be E.164 format (e.g. +251911234567)";
+    const fnErr = validateName(form.first_name, "First name"); if (fnErr) e.first_name = fnErr;
+    const lnErr = validateName(form.last_name, "Last name"); if (lnErr) e.last_name = lnErr;
+    // email and phone are optional in edit — validate only if provided
+    if (form.email) { const emailErr = validateEmail(form.email, false); if (emailErr) e.email = emailErr; }
+    if (form.phone_number) { const phoneErr = validatePhone(form.phone_number, false); if (phoneErr) e.phone_number = phoneErr; }
     setErrors(e);
     return Object.keys(e).length === 0;
   }

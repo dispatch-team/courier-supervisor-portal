@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, Shuffle } from "lucide-react";
 import { useCreateSupervisor } from "@/hooks/queries/use-create-supervisor";
+import { validateName, validateEmail, validatePhone } from "@/lib/validation";
 import { useI18n } from "@/intl";
 
 interface CreateSupervisorDialogProps {
@@ -71,13 +72,10 @@ export function CreateSupervisorDialog({ companyId, open, onOpenChange }: Create
 
   function validate(): boolean {
     const e: Record<string, string> = {};
-    if (!form.first_name.trim()) e.first_name = "First name is required";
-    if (!form.last_name.trim()) e.last_name = "Last name is required";
-    if (!form.email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email format";
-    if (!form.phone_number.trim()) e.phone_number = "Phone number is required";
-    else if (!/^\+\d{9,14}$/.test(form.phone_number.replace(/\s/g, "")))
-      e.phone_number = "Must be E.164 format (e.g. +251911234567)";
+    const fnErr = validateName(form.first_name, "First name"); if (fnErr) e.first_name = fnErr;
+    const lnErr = validateName(form.last_name, "Last name"); if (lnErr) e.last_name = lnErr;
+    const emailErr = validateEmail(form.email); if (emailErr) e.email = emailErr;
+    const phoneErr = validatePhone(form.phone_number); if (phoneErr) e.phone_number = phoneErr;
     if (!form.password) e.password = "Password is required";
     setErrors(e);
     return Object.keys(e).length === 0;

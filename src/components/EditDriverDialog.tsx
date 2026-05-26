@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, Upload, X } from "lucide-react";
 import { useUpdateDriver } from "@/hooks/queries/use-update-driver";
+import { validateName, validateEmail, validatePhone } from "@/lib/validation";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import type { Driver } from "@/types/api";
 
@@ -36,13 +37,10 @@ interface FormState {
 
 function validateForm(form: FormState): Record<string, string> {
   const errors: Record<string, string> = {};
-  if (!form.first_name.trim()) errors.first_name = "First name is required";
-  if (!form.last_name.trim()) errors.last_name = "Last name is required";
-  if (!form.email.trim()) errors.email = "Email is required";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = "Invalid email format";
-  if (!form.phone_number.trim()) errors.phone_number = "Phone number is required";
-  else if (!/^\+?\d{9,15}$/.test(form.phone_number.replace(/\s/g, "")))
-    errors.phone_number = "Invalid phone format";
+  const fnErr = validateName(form.first_name, "First name"); if (fnErr) errors.first_name = fnErr;
+  const lnErr = validateName(form.last_name, "Last name"); if (lnErr) errors.last_name = lnErr;
+  const emailErr = validateEmail(form.email); if (emailErr) errors.email = emailErr;
+  const phoneErr = validatePhone(form.phone_number); if (phoneErr) errors.phone_number = phoneErr;
   return errors;
 }
 

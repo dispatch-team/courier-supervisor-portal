@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { friendlyError } from "@/lib/api-client";
 import type { NormalizedCourierProfile } from "@/lib/courierProfile";
 import { cn } from "@/lib/utils";
+import { validatePhone, validateEmail, validateUrl } from "@/lib/validation";
 
 interface EditCompanyDialogProps {
   profile: NormalizedCourierProfile;
@@ -44,7 +45,20 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function validateForm(): Record<string, string> {
+    const e: Record<string, string> = {};
+    if (!form.company_name.trim()) e.company_name = "Company name is required";
+    if (!form.company_address.trim()) e.company_address = "Address is required";
+    const phoneErr = validatePhone(form.phone_number); if (phoneErr) e.phone_number = phoneErr;
+    const emailErr = validateEmail(form.email, false); if (emailErr) e.email = emailErr;
+    const urlErr = validateUrl(form.website_url, false); if (urlErr) e.website_url = urlErr;
+    if (form.max_weight && Number(form.max_weight) > 10_000) e.max_weight = "Max weight cannot exceed 10,000 kg";
+    if (form.base_price && Number(form.base_price) > 100_000) e.base_price = "Base price cannot exceed 100,000 ETB";
+    return e;
+  }
 
   useEffect(() => {
     if (open) {
@@ -63,11 +77,13 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
       setLogoFile(null);
       setLogoPreview(null);
       setError(null);
+      setFieldErrors({});
     }
   }, [open, profile]);
 
   function set(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
+    if (fieldErrors[key]) setFieldErrors((p) => { const n = { ...p }; delete n[key]; return n; });
   }
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -87,6 +103,9 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const errs = validateForm();
+    if (Object.keys(errs).length > 0) { setFieldErrors(errs); return; }
+    setFieldErrors({});
     try {
       await mutateAsync({
         company_name: form.company_name,
@@ -172,31 +191,39 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
           {/* Company info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="company_name">Company Name</Label>
+              <Label htmlFor="company_name">Company Name *</Label>
               <Input
                 id="company_name"
                 value={form.company_name}
                 onChange={(e) => set("company_name", e.target.value)}
                 placeholder="e.g. FastTrack Courier"
+                maxLength={100}
+                className={fieldErrors.company_name ? "border-destructive/60" : ""}
               />
+              {fieldErrors.company_name && <p className="text-xs text-destructive">{fieldErrors.company_name}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="company_address">Address</Label>
+              <Label htmlFor="company_address">Address *</Label>
               <Input
                 id="company_address"
                 value={form.company_address}
                 onChange={(e) => set("company_address", e.target.value)}
                 placeholder="e.g. Bole, Addis Ababa"
+                maxLength={200}
+                className={fieldErrors.company_address ? "border-destructive/60" : ""}
               />
+              {fieldErrors.company_address && <p className="text-xs text-destructive">{fieldErrors.company_address}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone_number">Phone Number</Label>
+              <Label htmlFor="phone_number">Phone Number *</Label>
               <Input
                 id="phone_number"
                 value={form.phone_number}
                 onChange={(e) => set("phone_number", e.target.value)}
-                placeholder="+251910000000"
+                placeholder="09XXXXXXXX or +2519XXXXXXXX"
+                className={fieldErrors.phone_number ? "border-destructive/60" : ""}
               />
+              {fieldErrors.phone_number && <p className="text-xs text-destructive">{fieldErrors.phone_number}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
@@ -206,7 +233,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
                 placeholder="contact@company.com"
+                maxLength={255}
+                className={fieldErrors.email ? "border-destructive/60" : ""}
               />
+              {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <Label htmlFor="website_url">Website URL</Label>
@@ -215,7 +245,9 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 value={form.website_url}
                 onChange={(e) => set("website_url", e.target.value)}
                 placeholder="https://yourcompany.com"
+                className={fieldErrors.website_url ? "border-destructive/60" : ""}
               />
+              {fieldErrors.website_url && <p className="text-xs text-destructive">{fieldErrors.website_url}</p>}
             </div>
           </div>
 
@@ -229,11 +261,13 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                   id="max_weight"
                   type="number"
                   min="0"
+                  max="10000"
                   step="0.1"
                   value={form.max_weight}
                   onChange={(e) => set("max_weight", e.target.value)}
                   placeholder="0"
                 />
+                {fieldErrors.max_weight && <p className="text-xs text-destructive">{fieldErrors.max_weight}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="base_price">Base Price (ETB)</Label>
@@ -241,11 +275,13 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                   id="base_price"
                   type="number"
                   min="0"
+                  max="100000"
                   step="0.01"
                   value={form.base_price}
                   onChange={(e) => set("base_price", e.target.value)}
                   placeholder="0.00"
                 />
+                {fieldErrors.base_price && <p className="text-xs text-destructive">{fieldErrors.base_price}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="weight_rate">Weight Rate (ETB/kg)</Label>
