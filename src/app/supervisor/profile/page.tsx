@@ -12,9 +12,9 @@ import {
   Star,
   Truck,
   Scale,
-  Clock,
   AlertCircle,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,15 +27,20 @@ import {
 } from "@/lib/courierProfile";
 import { ApiError, friendlyError } from "@/lib/api-client";
 import dispatchLogo from "@/assets/dispatch-logo.png";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { EditCompanyDialog } from "@/components/EditCompanyDialog";
+import { useIsOwner } from "@/hooks/queries/use-is-owner";
 
 export default function CourierProfilePage() {
   const { user, getValidAccessToken } = useAuth();
   const t = useI18n("profile");
   const router = useRouter();
+  const { isOwner } = useIsOwner();
 
   const [profile, setProfile] = useState<NormalizedCourierProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -169,10 +174,30 @@ export default function CourierProfilePage() {
           {/* Company Information Card */}
           <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-xl mb-6">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                {t("companyInfo")}
-              </CardTitle>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <CompanyLogo
+                    logoId={profile.company_logo_id}
+                    companyName={profile.company_name}
+                    className="h-16 w-16 rounded-xl border border-border/40"
+                  />
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    {t("companyInfo")}
+                  </CardTitle>
+                </div>
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 shrink-0"
+                    onClick={() => setEditOpen(true)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    Edit
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -321,6 +346,15 @@ export default function CourierProfilePage() {
           </Card>
         </main>
       </div>
+
+      {profile && (
+        <EditCompanyDialog
+          profile={profile}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSuccess={fetchProfile}
+        />
+      )}
     </AuthGuard>
   );
 }

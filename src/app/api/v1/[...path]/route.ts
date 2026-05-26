@@ -25,7 +25,10 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    init.body = await request.text();
+    const ct = contentType ?? "";
+    init.body = ct.includes("multipart/")
+      ? Buffer.from(await request.arrayBuffer())
+      : await request.text();
   }
 
   try {
