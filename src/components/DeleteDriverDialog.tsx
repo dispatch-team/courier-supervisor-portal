@@ -17,6 +17,7 @@ import { useDeleteDriver } from "@/hooks/queries/use-delete-driver";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import type { Driver } from "@/types/api";
+import { useI18n } from "@/intl";
 
 interface DeleteDriverDialogProps {
   driver: Driver | null;
@@ -35,6 +36,8 @@ export function DeleteDriverDialog({
   open,
   onOpenChange,
 }: DeleteDriverDialogProps) {
+  const t = useI18n("drivers");
+
   const [confirmed, setConfirmed] = useState(false);
   const [success, setSuccess] = useState(false);
   const { companyId } = useCompanyId();
@@ -50,13 +53,14 @@ export function DeleteDriverDialog({
 
   const hasInProgress = inProgressShipments.length > 0;
 
+  const resetMutation = deleteMutation.reset;
   useEffect(() => {
     if (open) {
       setConfirmed(false);
       setSuccess(false);
-      deleteMutation.reset();
+      resetMutation();
     }
-  }, [open]);
+  }, [open, resetMutation]);
 
   const handleDelete = () => {
     if (!driver || !companyId || !confirmed || hasInProgress) return;
@@ -79,9 +83,9 @@ export function DeleteDriverDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete Driver</DialogTitle>
+          <DialogTitle>{t("dialogs.delete.title")}</DialogTitle>
           <DialogDescription>
-            Permanently remove {fullName}&apos;s account
+            {t("dialogs.delete.description", { name: fullName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -91,15 +95,15 @@ export function DeleteDriverDialog({
               <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  Driver deleted
+                  {t("dialogs.delete.success")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {fullName}&apos;s account has been removed. Historical shipment records are preserved.
+                  {t("dialogs.delete.successDesc", { name: fullName })}
                 </p>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleClose}>Done</Button>
+              <Button onClick={handleClose}>{t("dialogs.done")}</Button>
             </DialogFooter>
           </div>
         ) : (
@@ -111,10 +115,10 @@ export function DeleteDriverDialog({
                   <Package className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-destructive">
-                      Cannot delete — {inProgressShipments.length} shipment{inProgressShipments.length > 1 ? "s" : ""} in progress
+                      {t("dialogs.delete.cannotDeleteTitle", { count: String(inProgressShipments.length) })}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Reassign or complete all in-progress shipments before deleting this driver.
+                      {t("dialogs.delete.cannotDeleteDesc")}
                     </p>
                   </div>
                 </div>
@@ -125,11 +129,11 @@ export function DeleteDriverDialog({
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                   <div className="text-sm text-muted-foreground">
-                    <p>This action is <span className="font-medium text-foreground">permanent</span> and will:</p>
+                    <p>{t("dialogs.delete.permanentWarning")}</p>
                     <ul className="list-disc list-inside mt-1 space-y-0.5 text-xs">
-                      <li>Remove {fullName}&apos;s login access</li>
-                      <li>Remove them from all driver lists</li>
-                      <li>Preserve historical shipment records for audit</li>
+                      <li>{t("dialogs.delete.permList.login", { name: fullName })}</li>
+                      <li>{t("dialogs.delete.permList.lists")}</li>
+                      <li>{t("dialogs.delete.permList.audit")}</li>
                     </ul>
                   </div>
                 </div>
@@ -144,7 +148,7 @@ export function DeleteDriverDialog({
                     className="mt-0.5"
                   />
                   <span className="text-sm text-muted-foreground">
-                    I understand this action is permanent and cannot be undone
+                    {t("dialogs.delete.checkboxLabel")}
                   </span>
                 </label>
               )}
@@ -159,7 +163,7 @@ export function DeleteDriverDialog({
 
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>
-                Cancel
+                {t("dialogs.cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -169,7 +173,7 @@ export function DeleteDriverDialog({
                 {deleteMutation.isPending && (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 )}
-                Delete Permanently
+                {t("dialogs.delete.submit")}
               </Button>
             </DialogFooter>
           </>
