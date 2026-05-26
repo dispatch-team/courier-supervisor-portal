@@ -15,6 +15,7 @@ import { Loader2, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useBatchAssignDriver, type BatchResult } from "@/hooks/queries/use-batch-assign";
 import type { Shipment } from "@/types/api";
+import { useI18n } from "@/intl";
 
 interface BatchAssignDialogProps {
   shipments: Shipment[];
@@ -29,6 +30,7 @@ export function BatchAssignDialog({
   onOpenChange,
   onComplete,
 }: BatchAssignDialogProps) {
+  const t = useI18n("shipments");
   const [selectedDriverId, setSelectedDriverId] = useState<number | "">("");
   const [results, setResults] = useState<BatchResult[] | null>(null);
 
@@ -79,9 +81,12 @@ export function BatchAssignDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Batch Assign to Driver</DialogTitle>
+          <DialogTitle>{t("batchAssignDialog.title")}</DialogTitle>
           <DialogDescription>
-            Assign {shipments.length} shipment{shipments.length > 1 ? "s" : ""} to a single driver
+            {t("batchAssignDialog.description", {
+              count: String(shipments.length),
+              s: shipments.length > 1 ? "s" : "",
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -89,7 +94,7 @@ export function BatchAssignDialog({
           {/* Selected shipments summary */}
           <div className="p-3 rounded-lg bg-muted/50 max-h-[150px] overflow-y-auto">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Selected Shipments
+              {t("batchAssignDialog.selectedShipments")}
             </p>
             <div className="space-y-1">
               {shipments.map((s) => (
@@ -102,24 +107,24 @@ export function BatchAssignDialog({
 
           {/* Driver selector */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Select Driver</label>
+            <label className="text-sm font-medium">{t("batchAssignDialog.selectDriverLabel")}</label>
             {driversLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading drivers...
+                {t("batchAssignDialog.loadingDrivers")}
               </div>
             ) : activeDrivers.length === 0 ? (
               <p className="text-sm text-destructive">
-                No active drivers available.
+                {t("batchAssignDialog.noActiveDrivers")}
               </p>
             ) : (
               <select
                 value={selectedDriverId}
                 onChange={(e) => setSelectedDriverId(e.target.value ? Number(e.target.value) : "")}
                 disabled={batchMutation.isPending || !!results}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 [color-scheme:dark]"
               >
-                <option value="">Choose a driver...</option>
+                <option value="">{t("batchAssignDialog.chooseDriverPlaceholder")}</option>
                 {activeDrivers.map((driver) => (
                   <option key={driver.id} value={driver.id}>
                     {driver.first_name} {driver.last_name} — {driver.phone_number}
@@ -135,12 +140,13 @@ export function BatchAssignDialog({
               <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                 <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                 <p className="text-sm text-green-700 dark:text-green-400">
-                  {successCount} shipment{successCount !== 1 ? "s" : ""} assigned to{" "}
-                  <span className="font-semibold">
-                    {selectedDriver
+                  {t("batchAssignDialog.successMsg", {
+                    count: String(successCount),
+                    s: successCount !== 1 ? "s" : "",
+                    name: selectedDriver
                       ? `${selectedDriver.first_name} ${selectedDriver.last_name}`
-                      : `Driver #${selectedDriverId}`}
-                  </span>
+                      : `Driver #${selectedDriverId}`,
+                  })}
                 </p>
               </div>
 
@@ -149,7 +155,7 @@ export function BatchAssignDialog({
                   <div className="flex items-center gap-2">
                     <XCircle className="h-4 w-4 text-destructive shrink-0" />
                     <p className="text-sm font-semibold text-destructive">
-                      {failCount} failed
+                      {t("batchAssignDialog.failedMsg", { count: String(failCount) })}
                     </p>
                   </div>
                   {results
@@ -177,14 +183,17 @@ export function BatchAssignDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            {results ? "Close" : "Cancel"}
+            {results ? t("batchAssignDialog.close") : t("batchAssignDialog.cancel")}
           </Button>
           {!results && (
             <Button onClick={handleAssign} disabled={!canAssign}>
               {batchMutation.isPending && (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               )}
-              Assign {shipments.length} Shipment{shipments.length > 1 ? "s" : ""}
+              {t("batchAssignDialog.submit", {
+                count: String(shipments.length),
+                s: shipments.length > 1 ? "s" : "",
+              })}
             </Button>
           )}
         </DialogFooter>

@@ -15,6 +15,7 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { useUpdateDriver } from "@/hooks/queries/use-update-driver";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import type { Driver } from "@/types/api";
+import { useI18n } from "@/intl";
 
 interface ReactivateDriverDialogProps {
   driver: Driver | null;
@@ -27,6 +28,8 @@ export function ReactivateDriverDialog({
   open,
   onOpenChange,
 }: ReactivateDriverDialogProps) {
+  const t = useI18n("drivers");
+
   const [success, setSuccess] = useState(false);
   const { companyId } = useCompanyId();
   const updateMutation = useUpdateDriver();
@@ -36,7 +39,7 @@ export function ReactivateDriverDialog({
       setSuccess(false);
       updateMutation.reset();
     }
-  }, [open]);
+  }, [open, updateMutation]);
 
   const handleReactivate = () => {
     if (!driver || !companyId) return;
@@ -63,9 +66,9 @@ export function ReactivateDriverDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Reactivate Driver</DialogTitle>
+          <DialogTitle>{t("dialogs.reactivate.title")}</DialogTitle>
           <DialogDescription>
-            Restore {fullName}&apos;s account to active status
+            {t("dialogs.reactivate.description", { name: fullName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -75,22 +78,22 @@ export function ReactivateDriverDialog({
               <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  Driver reactivated
+                  {t("dialogs.reactivate.success")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {fullName} can now receive assignments and log in.
+                  {t("dialogs.reactivate.successDesc", { name: fullName })}
                 </p>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleClose}>Done</Button>
+              <Button onClick={handleClose}>{t("dialogs.done")}</Button>
             </DialogFooter>
           </div>
         ) : (
           <>
             <div className="space-y-4 py-2">
               <p className="text-sm text-muted-foreground">
-                This will restore {fullName}&apos;s account. They will be able to log in and receive new shipment assignments.
+                {t("dialogs.reactivate.body", { name: fullName })}
               </p>
 
               {updateMutation.isError && (
@@ -102,7 +105,7 @@ export function ReactivateDriverDialog({
 
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>
-                Cancel
+                {t("dialogs.cancel")}
               </Button>
               <Button
                 onClick={handleReactivate}
@@ -111,7 +114,7 @@ export function ReactivateDriverDialog({
                 {updateMutation.isPending && (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 )}
-                Reactivate
+                {t("dialogs.reactivate.submit")}
               </Button>
             </DialogFooter>
           </>

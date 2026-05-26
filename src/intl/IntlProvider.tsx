@@ -134,4 +134,66 @@ export function useI18n<NS extends Namespace>(namespace: NS) {
   return t;
 }
 
+/**
+ * useTranslateValidationError
+ * Hook to translate validation messages returned by validation helpers.
+ */
+export function useTranslateValidationError() {
+  const t = useI18n("common");
+  const tDrivers = useI18n("drivers");
+  const tProfile = useI18n("profile");
+  return useCallback(
+    (error: string | null): string | null => {
+      if (!error) return null;
+      if (error === "Phone number is required") return t("validation.phoneRequired");
+      if (error === "Use format 09XXXXXXXX or +2519XXXXXXXX") return t("validation.phoneFormat");
+      if (error === "Email is required") return t("validation.emailRequired");
+      if (error === "Invalid email format") return t("validation.emailFormat");
+      if (error === "Email must be under 255 characters") return t("validation.emailTooLong");
+      if (error === "Website URL is required") return t("validation.urlRequired");
+      if (error === "URL must start with http:// or https://") return t("validation.urlFormat");
+      if (error === "Invalid URL (e.g. https://example.com)") return t("validation.urlInvalid");
+      if (error === "Password is required") return t("validation.passwordRequired");
+      if (error === "Must be at least 8 characters") return t("validation.passwordTooShort");
+      if (error === "Must include an uppercase letter") return t("validation.passwordUpper");
+      if (error === "Must include a lowercase letter") return t("validation.passwordLower");
+      if (error === "Must include a number") return t("validation.passwordNumber");
+      if (error === "Must include a special character") return t("validation.passwordSpecial");
+      if (error === "License plate is required") return t("validation.plateRequired");
+      if (error === "Use format AA-12345 (2–3 letters, hyphen, 5 digits)") return t("validation.plateFormat");
+      if (error === "Passwords do not match") return t("validation.passwordsMismatch");
+
+      if (error === "Vehicle type is required") {
+        return t("validation.fieldRequired", {
+          field: tDrivers("dialogs.create.vehicleType").replace(" *", ""),
+        });
+      }
+      if (error === "Weight rate cannot exceed 10,000 ETB/kg") {
+        return tProfile("editDialog.errors.weightRateExceeded");
+      }
+      if (error === "Distance rate cannot exceed 10,000 ETB/km") {
+        return tProfile("editDialog.errors.distanceRateExceeded");
+      }
+      if (error === "Time rate cannot exceed 10,000 ETB/min") {
+        return tProfile("editDialog.errors.timeRateExceeded");
+      }
+
+      // Dynamic field patterns
+      if (error.endsWith(" is required")) {
+        const field = error.replace(" is required", "");
+        return t("validation.fieldRequired", { field });
+      }
+      if (error.endsWith(" characters") && error.includes(" must be under ")) {
+        const parts = error.split(" must be under ");
+        const field = parts[0];
+        const count = parts[1].replace(" characters", "");
+        return t("validation.fieldTooLong", { field, count });
+      }
+
+      return error;
+    },
+    [t]
+  );
+}
+
 // Use setLocale via: const { setLocale } = useLocale();

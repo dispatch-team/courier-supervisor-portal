@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/intl";
 
 export type ShipmentStatus = 
   | "pending" 
@@ -16,46 +17,38 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-const statusConfig: Record<ShipmentStatus, { label: string; className: string }> = {
+const statusConfig: Record<ShipmentStatus, { className: string }> = {
   pending: {
-    label: "Pending",
     className: "bg-status-pending/10 text-warning-foreground border-status-pending/30",
   },
   assigned: {
-    label: "Assigned",
     className: "bg-status-assigned/10 text-info border-status-assigned/30",
   },
   picked_up: {
-    label: "Picked Up",
     className: "bg-status-in-transit/10 text-status-in-transit border-status-in-transit/30",
   },
   in_transit: {
-    label: "In Transit",
     className: "bg-status-in-transit/10 text-status-in-transit border-status-in-transit/30",
   },
   out_for_delivery: {
-    label: "Out for Delivery",
     className: "bg-info/10 text-info border-info/30",
   },
   delivered: {
-    label: "Delivered",
     className: "bg-success/10 text-success border-success/30",
   },
   failed: {
-    label: "Failed",
     className: "bg-destructive/10 text-destructive border-destructive/30",
   },
   returned: {
-    label: "Returned",
     className: "bg-muted text-muted-foreground border-muted-foreground/30",
   },
   cancelled: {
-    label: "Cancelled",
     className: "bg-muted text-muted-foreground border-muted-foreground/30",
   },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const t = useI18n("shipments");
   const config = statusConfig[status];
 
   return (
@@ -77,7 +70,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         status === "failed" && "bg-destructive",
         (status === "returned" || status === "cancelled") && "bg-muted-foreground"
       )} />
-      {config.label}
+      {t(`status.${status}` as any)}
     </span>
   );
 }

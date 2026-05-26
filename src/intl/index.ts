@@ -15,6 +15,6 @@
 export { default as en } from "./en";
 export { default as am } from "./am";
 export type { Messages } from "./en";
-export { useI18n, useLocale, IntlProvider } from "./IntlProvider";
+export { useI18n, useLocale, IntlProvider, useTranslateValidationError } from "./IntlProvider";
 
 export type Locale = "en" | "am";

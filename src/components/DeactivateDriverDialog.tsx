@@ -16,6 +16,7 @@ import { useUpdateDriver } from "@/hooks/queries/use-update-driver";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import type { Driver } from "@/types/api";
+import { useI18n } from "@/intl";
 
 interface DeactivateDriverDialogProps {
   driver: Driver | null;
@@ -34,6 +35,8 @@ export function DeactivateDriverDialog({
   open,
   onOpenChange,
 }: DeactivateDriverDialogProps) {
+  const t = useI18n("drivers");
+
   const [success, setSuccess] = useState(false);
   const { companyId } = useCompanyId();
   const updateMutation = useUpdateDriver();
@@ -54,7 +57,7 @@ export function DeactivateDriverDialog({
       setSuccess(false);
       updateMutation.reset();
     }
-  }, [open]);
+  }, [open, updateMutation]);
 
   const handleDeactivate = () => {
     if (!driver || !companyId) return;
@@ -81,9 +84,9 @@ export function DeactivateDriverDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Deactivate Driver</DialogTitle>
+          <DialogTitle>{t("dialogs.deactivate.title")}</DialogTitle>
           <DialogDescription>
-            Temporarily deactivate {fullName}&apos;s account
+            {t("dialogs.deactivate.description", { name: fullName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,15 +96,15 @@ export function DeactivateDriverDialog({
               <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  Driver deactivated
+                  {t("dialogs.deactivate.success")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {fullName} can no longer receive new assignments or log in.
+                  {t("dialogs.deactivate.successDesc", { name: fullName })}
                 </p>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleClose}>Done</Button>
+              <Button onClick={handleClose}>{t("dialogs.done")}</Button>
             </DialogFooter>
           </div>
         ) : (
@@ -113,10 +116,10 @@ export function DeactivateDriverDialog({
                   <Package className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                      {activeShipments.length} active assignment{activeShipments.length > 1 ? "s" : ""}
+                      {t("dialogs.deactivate.activeAssignments", { count: String(activeShipments.length) })}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      This driver has shipments in progress. Consider reassigning them before deactivation.
+                      {t("dialogs.deactivate.activeAssignmentsDesc")}
                     </p>
                   </div>
                 </div>
@@ -126,11 +129,11 @@ export function DeactivateDriverDialog({
               <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                 <div className="text-sm text-muted-foreground">
-                  <p>Deactivating this driver will:</p>
+                  <p>{t("dialogs.deactivate.warningTitle")}</p>
                   <ul className="list-disc list-inside mt-1 space-y-0.5 text-xs">
-                    <li>Prevent them from logging into the mobile app</li>
-                    <li>Exclude them from new assignment lists</li>
-                    <li>Preserve all historical data and deliveries</li>
+                    <li>{t("dialogs.deactivate.warningList.login")}</li>
+                    <li>{t("dialogs.deactivate.warningList.newAssignments")}</li>
+                    <li>{t("dialogs.deactivate.warningList.preserve")}</li>
                   </ul>
                 </div>
               </div>
@@ -145,7 +148,7 @@ export function DeactivateDriverDialog({
 
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>
-                Cancel
+                {t("dialogs.cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -155,7 +158,7 @@ export function DeactivateDriverDialog({
                 {updateMutation.isPending && (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 )}
-                Deactivate
+                {t("dialogs.deactivate.submit")}
               </Button>
             </DialogFooter>
           </>

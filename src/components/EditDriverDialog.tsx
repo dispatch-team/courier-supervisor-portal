@@ -16,6 +16,7 @@ import { useUpdateDriver } from "@/hooks/queries/use-update-driver";
 import { validateName, validateEmail, validatePhone } from "@/lib/validation";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import type { Driver } from "@/types/api";
+import { useI18n, useTranslateValidationError } from "@/intl";
 
 interface EditDriverDialogProps {
   driver: Driver | null;
@@ -64,6 +65,9 @@ export function EditDriverDialog({
   open,
   onOpenChange,
 }: EditDriverDialogProps) {
+  const t = useI18n("drivers");
+  const tVal = useTranslateValidationError();
+
   const [form, setForm] = useState<FormState>({
     first_name: "",
     middle_name: "",
@@ -95,7 +99,7 @@ export function EditDriverDialog({
       setChangedFields(null);
       updateMutation.reset();
     }
-  }, [driver]);
+  }, [driver, updateMutation]);
 
   const updateField = (key: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -171,9 +175,9 @@ export function EditDriverDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Driver</DialogTitle>
+          <DialogTitle>{t("dialogs.edit.title")}</DialogTitle>
           <DialogDescription>
-            Update profile for {fullName}
+            {t("dialogs.edit.description", { name: fullName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -183,15 +187,15 @@ export function EditDriverDialog({
               <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  Driver updated successfully
+                  {t("dialogs.edit.success")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Changed: {changedFields.map((f) => f.replace(/_/g, " ")).join(", ")}
+                  {t("dialogs.edit.changedFields", { fields: changedFields.map((f) => f.replace(/_/g, " ")).join(", ") })}
                 </p>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleClose}>Done</Button>
+              <Button onClick={handleClose}>{t("dialogs.done")}</Button>
             </DialogFooter>
           </div>
         ) : (
@@ -199,20 +203,20 @@ export function EditDriverDialog({
             <div className="space-y-4 py-2">
               {/* Name Row */}
               <div className="grid grid-cols-3 gap-3">
-                <Field label="First Name *" value={form.first_name} onChange={(v) => updateField("first_name", v)} error={errors.first_name} />
-                <Field label="Middle Name" value={form.middle_name} onChange={(v) => updateField("middle_name", v)} />
-                <Field label="Last Name *" value={form.last_name} onChange={(v) => updateField("last_name", v)} error={errors.last_name} />
+                <Field label={t("dialogs.create.firstName")} value={form.first_name} onChange={(v) => updateField("first_name", v)} error={tVal(errors.first_name) || undefined} />
+                <Field label={t("dialogs.create.middleName")} value={form.middle_name} onChange={(v) => updateField("middle_name", v)} />
+                <Field label={t("dialogs.create.lastName")} value={form.last_name} onChange={(v) => updateField("last_name", v)} error={tVal(errors.last_name) || undefined} />
               </div>
 
               {/* Contact Row */}
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Email *" value={form.email} onChange={(v) => updateField("email", v)} error={errors.email} type="email" />
-                <Field label="Phone *" value={form.phone_number} onChange={(v) => updateField("phone_number", v)} error={errors.phone_number} type="tel" />
+                <Field label={t("dialogs.create.email")} value={form.email} onChange={(v) => updateField("email", v)} error={tVal(errors.email) || undefined} type="email" />
+                <Field label={t("dialogs.create.phone")} value={form.phone_number} onChange={(v) => updateField("phone_number", v)} error={tVal(errors.phone_number) || undefined} type="tel" />
               </div>
 
               {/* Profile Photo */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Profile Photo</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("dialogs.edit.profilePhoto")}</label>
                 {profilePreview ? (
                   <div className="flex items-center gap-3">
                     <img src={profilePreview} alt="Preview" className="h-12 w-12 rounded-full object-cover border border-border" />
@@ -237,7 +241,7 @@ export function EditDriverDialog({
                       className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex-1"
                     >
                       <Upload className="h-3.5 w-3.5" />
-                      {driver.profile_picture_id ? "Change photo" : "Upload photo"}
+                      {driver.profile_picture_id ? t("dialogs.edit.changePhoto") : t("dialogs.edit.uploadPhoto")}
                     </button>
                   </div>
                 )}
@@ -257,10 +261,10 @@ export function EditDriverDialog({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>Cancel</Button>
+              <Button variant="outline" onClick={handleClose}>{t("dialogs.cancel")}</Button>
               <Button onClick={handleSubmit} disabled={updateMutation.isPending}>
                 {updateMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Save Changes
+                {t("dialogs.edit.submit")}
               </Button>
             </DialogFooter>
           </>
