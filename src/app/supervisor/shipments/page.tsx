@@ -44,6 +44,7 @@ import {
 import { useShipments, type ShipmentFilters } from "@/hooks/queries/use-shipments";
 import { cn } from "@/lib/utils";
 import type { Shipment, ShipmentStatus } from "@/types/api";
+import { ShipmentsPageSkeleton } from "@/components/skeletons";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -229,13 +230,7 @@ export default function ShipmentsPage() {
   const allSelected = processedShipments.length > 0 && selectedCodes.size === processedShipments.length;
   const someSelected = selectedCodes.size > 0 && !allSelected;
 
-  if (isLoading && !data) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading && !data) return <ShipmentsPageSkeleton />;
 
   if (error) {
     return (

@@ -27,6 +27,7 @@ import { ApiError, friendlyError } from "@/lib/api-client";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { EditCompanyDialog } from "@/components/EditCompanyDialog";
 import { useIsOwner } from "@/hooks/queries/use-is-owner";
+import { ProfileSkeleton } from "@/components/skeletons";
 
 export default function CourierProfilePage() {
   const { user, getValidAccessToken } = useAuth();
@@ -71,13 +72,7 @@ export default function CourierProfilePage() {
     fetchProfile();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <ProfileSkeleton />;
 
   if (error) {
     return (

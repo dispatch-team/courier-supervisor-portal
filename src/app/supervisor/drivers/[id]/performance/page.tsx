@@ -98,6 +98,7 @@ function formatShortDate(iso: string, locale: string = "en-US"): string {
 }
 
 import { useI18n, useLocale } from "@/intl";
+import { DriverPerformanceSkeleton } from "@/components/skeletons";
 
 const getVolumeConfig = (t: any): ChartConfig => ({
   delivered: { label: t("metrics.delivered"), color: "hsl(var(--status-delivered))" },
@@ -186,13 +187,7 @@ export default function DriverPerformancePage({
     }
   };
 
-  if (isLoading && !driver) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading && !driver) return <DriverPerformanceSkeleton />;
 
   if (!driver) {
     return (

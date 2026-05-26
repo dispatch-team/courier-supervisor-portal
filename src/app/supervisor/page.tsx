@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Shipment } from "@/types/api";
+import { DashboardSkeleton } from "@/components/skeletons";
 
 function startOfToday(): Date {
   const d = new Date();
@@ -112,13 +113,7 @@ export default function SupervisorDashboard() {
     refetch();
   };
 
-  if (isLoading && !stats) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading && !stats) return <DashboardSkeleton />;
 
   return (
     <div className="space-y-6">

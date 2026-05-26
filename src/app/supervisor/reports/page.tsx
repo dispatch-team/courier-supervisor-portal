@@ -38,6 +38,7 @@ import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { computeRevenueMetrics, formatEtb } from "@/lib/revenue-metrics";
 import { computeFleetMetrics } from "@/lib/fleet-metrics";
 import { computeDriverMetrics, formatDuration } from "@/lib/driver-metrics";
+import { ReportsSkeleton } from "@/components/skeletons";
 
 function toApiDate(d: Date, isEnd = false): string {
   const datePart = d.toISOString().split('T')[0];
@@ -209,13 +210,7 @@ export default function ReportsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <ReportsSkeleton />;
 
   if (!stats) {
     return (

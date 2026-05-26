@@ -61,6 +61,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useI18n, useLocale } from "@/intl";
+import { RevenueSkeleton } from "@/components/skeletons";
 
 type RangePreset = "7d" | "30d" | "90d" | "custom";
 
@@ -191,13 +192,7 @@ export default function RevenuePage() {
     }
   };
 
-  if (isLoading && !metrics) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading && !metrics) return <RevenueSkeleton />;
 
   const hasData = metrics && metrics.deliveredCount > 0;
 

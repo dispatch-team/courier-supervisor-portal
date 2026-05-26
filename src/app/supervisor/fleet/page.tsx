@@ -65,6 +65,7 @@ function getPresetRange(preset: Exclude<RangePreset, "custom">): { start: Date; 
 }
 
 import { useI18n } from "@/intl";
+import { FleetSkeleton } from "@/components/skeletons";
 
 const getHourlyConfig = (t: any): ChartConfig => ({
   count: { label: t("fleet.workload.shipments"), color: "hsl(var(--primary))" },
@@ -106,13 +107,7 @@ export default function FleetUtilizationPage() {
     return computeFleetMetrics(drivers, shipmentData.shipments);
   }, [drivers, shipmentData]);
 
-  if (isLoading && !metrics) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading && !metrics) return <FleetSkeleton />;
 
   if (!metrics || metrics.totalActiveDrivers === 0) {
     return (

@@ -42,6 +42,7 @@ import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { cn } from "@/lib/utils";
 import type { Driver } from "@/types/api";
+import { DriversPageSkeleton } from "@/components/skeletons";
 
 const STATUS_TABS = [
   { id: "all", label: "All" },
@@ -114,13 +115,7 @@ export default function DriversPage() {
     };
   }, [drivers]);
 
-  if (isLoading && !drivers) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading && !drivers) return <DriversPageSkeleton />;
 
   if (error) {
     return (

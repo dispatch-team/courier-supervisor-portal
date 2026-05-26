@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { useShipment } from "@/hooks/queries/use-shipments";
 import { ShipmentMapLoader } from "@/components/ShipmentMapLoader";
 import type { ShipmentStatus } from "@/types/api";
+import { ShipmentDetailSkeleton } from "@/components/skeletons";
 
 function formatDate(iso: string | null, locale: string = "en-GB"): string {
   if (!iso) return "—";
@@ -114,13 +115,7 @@ export default function ShipmentDetailPage({
     [shipment, t]
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <ShipmentDetailSkeleton />;
 
   if (error) {
     const is404 = error.message?.toLowerCase().includes("not found");

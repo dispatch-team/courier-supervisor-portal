@@ -28,6 +28,7 @@ import { DeleteSupervisorDialog } from "@/components/DeleteSupervisorDialog";
 import { useI18n } from "@/intl";
 import { cn } from "@/lib/utils";
 import type { Supervisor } from "@/types/api";
+import { SupervisorsPageSkeleton } from "@/components/skeletons";
 
 const STATUS_COLOR: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
