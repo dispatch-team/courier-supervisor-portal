@@ -17,7 +17,6 @@ import {
   Activity,
   UserCog,
   Languages,
-  Palette,
   Sun,
   Moon,
   Monitor,
@@ -197,16 +196,15 @@ export function SupervisorSidebar() {
                 transition={{ duration: 0.2, ease: "easeInOut" }}
                 className="overflow-hidden"
               >
-                <div className={cn("flex gap-2 pt-2", isCollapsed ? "flex-col items-center" : "pl-3")}>
+                <div className={cn("flex gap-1 pt-2", isCollapsed ? "flex-col items-center" : "pl-3")}>
                   {/* Language picker */}
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
+                        className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
                         title="Language"
                       >
-                        <Languages className="h-4 w-4 shrink-0" />
-                        {!isCollapsed && <span>Language</span>}
+                        <Languages className="h-4 w-4" />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent side="right" align="end" className="w-44 p-1.5">
@@ -229,15 +227,20 @@ export function SupervisorSidebar() {
                     </PopoverContent>
                   </Popover>
 
-                  {/* Theme picker */}
+                  {/* Theme picker — shows active theme icon */}
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
+                        className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
                         title="Theme"
                       >
-                        <Palette className="h-4 w-4 shrink-0" />
-                        {!isCollapsed && <span>Theme</span>}
+                        {theme === "dark" ? (
+                          <Moon className="h-4 w-4" />
+                        ) : theme === "light" ? (
+                          <Sun className="h-4 w-4" />
+                        ) : (
+                          <Monitor className="h-4 w-4" />
+                        )}
                       </button>
                     </PopoverTrigger>
                     <PopoverContent side="right" align="end" className="w-44 p-1.5">
