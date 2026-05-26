@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -16,13 +16,20 @@ import {
   User as UserIcon,
   Activity,
   UserCog,
+  Languages,
+  Palette,
+  Sun,
+  Moon,
+  Monitor,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import dispatchLogo from "@/assets/dispatch-logo.png";
-
-import { useI18n } from "@/intl";
+import { useI18n, useLocale, type Locale } from "@/intl";
 
 // We'll define icons here but labels will be translated inside the component
 const NAV_ICONS = [
@@ -35,13 +42,27 @@ const NAV_ICONS = [
   { id: "supervisors", href: "/supervisor/supervisors", icon: UserCog },
 ];
 
+const THEMES = [
+  { value: "light" as const, icon: Sun, label: "Light" },
+  { value: "dark" as const, icon: Moon, label: "Dark" },
+  { value: "system" as const, icon: Monitor, label: "System" },
+];
+
+const LOCALES: { code: Locale; label: string; native: string }[] = [
+  { code: "en", label: "English", native: "EN" },
+  { code: "am", label: "Amharic", native: "አማ" },
+];
+
 export function SupervisorSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const t = useI18n("sidebar");
   const { logout, user } = useAuth();
-  
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useLocale();
+
   const navItems = NAV_ICONS.map(item => ({
     ...item,
     label: t(item.id as any)
@@ -147,17 +168,102 @@ export function SupervisorSidebar() {
           </div>
         </Link>
         
-         <Link href="/supervisor/settings">
-          <div className={cn(
-            "flex items-center rounded-2xl p-3 transition-all duration-300 cursor-pointer border",
-            pathname?.startsWith("/supervisor/settings")
-              ? "bg-primary/10 text-primary border-primary/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
-              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground border-transparent",
-          )}>
+        {/* Settings — expandable inline */}
+        <div>
+          <button
+            onClick={() => setSettingsOpen((o) => !o)}
+            className={cn(
+              "w-full flex items-center rounded-2xl p-3 transition-all duration-300 cursor-pointer border",
+              settingsOpen
+                ? "bg-primary/10 text-primary border-primary/20"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground border-transparent",
+            )}
+          >
             <Settings className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-300", isCollapsed ? "mx-auto" : "mr-4")} />
-            {!isCollapsed && <span className="text-sm font-medium tracking-wide">{t("settings")}</span>}
-          </div>
-        </Link>
+            {!isCollapsed && (
+              <>
+                <span className="text-sm font-medium tracking-wide flex-1 text-left">{t("settings")}</span>
+                <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200", settingsOpen && "rotate-90")} />
+              </>
+            )}
+          </button>
+
+          <AnimatePresence initial={false}>
+            {settingsOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className={cn("flex gap-2 pt-2", isCollapsed ? "flex-col items-center" : "pl-3")}>
+                  {/* Language picker */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
+                        title="Language"
+                      >
+                        <Languages className="h-4 w-4 shrink-0" />
+                        {!isCollapsed && <span>Language</span>}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="right" align="end" className="w-44 p-1.5">
+                      {LOCALES.map((l) => (
+                        <button
+                          key={l.code}
+                          onClick={() => setLocale(l.code)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                            locale === l.code
+                              ? "bg-primary/10 text-primary"
+                              : "hover:bg-muted text-foreground",
+                          )}
+                        >
+                          <span className="text-xs font-bold w-6">{l.native}</span>
+                          <span className="flex-1 text-left">{l.label}</span>
+                          {locale === l.code && <Check className="h-3.5 w-3.5" />}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Theme picker */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
+                        title="Theme"
+                      >
+                        <Palette className="h-4 w-4 shrink-0" />
+                        {!isCollapsed && <span>Theme</span>}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="right" align="end" className="w-44 p-1.5">
+                      {THEMES.map(({ value, icon: Icon, label }) => (
+                        <button
+                          key={value}
+                          onClick={() => setTheme(value)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                            theme === value
+                              ? "bg-primary/10 text-primary"
+                              : "hover:bg-muted text-foreground",
+                          )}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="flex-1 text-left">{label}</span>
+                          {theme === value && <Check className="h-3.5 w-3.5" />}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
          <button
           onClick={handleLogout}
