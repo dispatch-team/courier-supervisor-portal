@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import dispatchLogo from "@/assets/dispatch-logo.png";
+import dispatchIcon from "@/assets/dispatch-icon.png";
 import { useI18n, useLocale, type Locale } from "@/intl";
 
 // We'll define icons here but labels will be translated inside the component
@@ -90,7 +91,7 @@ export function SupervisorSidebar() {
               transition={{ duration: 0.2 }}
               className="flex items-center justify-center overflow-hidden w-full"
             >
-              <img src={dispatchLogo.src} alt="Dispatch Logo" className="h-36 w-auto object-contain drop-shadow-[0_0_15px_hsl(270,70%,60%,0.2)]" />
+              <img src={dispatchLogo.src} alt="Dispatch Logo" className="h-32 w-auto object-contain drop-shadow-[0_0_15px_hsl(270,70%,60%,0.2)]" />
             </motion.div>
           ) : (
             <motion.div
@@ -101,7 +102,7 @@ export function SupervisorSidebar() {
               transition={{ duration: 0.2 }}
               className="w-full flex justify-center"
             >
-              <img src={dispatchLogo.src} alt="Dispatch Logo" className="h-36 w-36 object-cover drop-shadow-[0_0_15px_hsl(270,70%,60%,0.2)]" />
+              <img src={dispatchIcon.src} alt="Dispatch Icon" className="h-14 w-14 object-contain drop-shadow-[0_0_15px_hsl(270,70%,60%,0.2)]" />
             </motion.div>
           )}
         </AnimatePresence>
