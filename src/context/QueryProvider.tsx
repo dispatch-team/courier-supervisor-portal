@@ -1,7 +1,23 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+function CacheInvalidator() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const prevUser = useRef(user);
+
+  useEffect(() => {
+    if (prevUser.current && !user) {
+      queryClient.clear();
+    }
+    prevUser.current = user;
+  }, [user, queryClient]);
+
+  return null;
+}
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [client] = useState(
@@ -17,5 +33,10 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       }),
   );
 
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <CacheInvalidator />
+      {children}
+    </QueryClientProvider>
+  );
 }
