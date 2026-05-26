@@ -1,12 +1,15 @@
 import type { Driver, Shipment } from "@/types/api";
 import type { RevenueMetrics } from "@/lib/revenue-metrics";
 import { formatEtb } from "@/lib/revenue-metrics";
+import { drawPdfHeader } from "@/lib/report-utils";
 
 export interface ReportContext {
   metrics: RevenueMetrics;
   rangeStart: Date;
   rangeEnd: Date;
   companyName?: string;
+  companyWebsite?: string;
+  companyLogo?: string;
   shipments?: Shipment[];
   drivers?: Driver[];
 }
@@ -119,19 +122,18 @@ export async function exportRevenueReportPdf(ctx: ReportContext): Promise<void> 
   const margin = 40;
   const headStyles = { fillColor: [30, 30, 40] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const };
 
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.text("Revenue Report", margin, 60);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(110);
-  if (ctx.companyName) doc.text(ctx.companyName, margin, 80);
-  doc.text(`${fmtDate(ctx.rangeStart)} – ${fmtDate(ctx.rangeEnd)}`, margin, ctx.companyName ? 96 : 80);
-  doc.setTextColor(0);
+  const startY = drawPdfHeader(doc, {
+    title: "Revenue Report",
+    dateRange: `${fmtDate(ctx.rangeStart)} – ${fmtDate(ctx.rangeEnd)}`,
+    companyName: ctx.companyName,
+    companyWebsite: ctx.companyWebsite,
+    companyLogo: ctx.companyLogo,
+    margin,
+  });
 
   // Summary
   autoTable(doc, {
-    startY: 120,
+    startY,
     head: [["Metric", "Value"]],
     body: buildSummaryRows(ctx),
     theme: "striped",

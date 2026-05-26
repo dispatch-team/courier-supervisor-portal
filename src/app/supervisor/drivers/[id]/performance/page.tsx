@@ -55,6 +55,9 @@ import { exportDriverReportPdf, exportDriverReportExcel } from "@/lib/driver-rep
 import { useDriver } from "@/hooks/queries/use-drivers";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
+import { useApi } from "@/hooks/use-api";
+import { useAuth } from "@/context/AuthContext";
+import { fetchLogoAsDataUrl } from "@/lib/report-utils";
 import { computeDriverMetrics, formatDuration } from "@/lib/driver-metrics";
 import { cn } from "@/lib/utils";
 
@@ -132,6 +135,8 @@ export default function DriverPerformancePage({
 
   const { companyId } = useCompanyId();
   const { data: driver, isLoading: driverLoading } = useDriver(companyId, driverId);
+  const api = useApi();
+  const { getValidAccessToken } = useAuth();
 
   const { start, end } = useMemo(() => {
     if (preset === "custom" && customRange?.from && customRange?.to) {
@@ -166,7 +171,12 @@ export default function DriverPerformancePage({
     if (!driver || !metrics) return;
     setExporting(format);
     try {
-      const ctx = { driver, metrics, rangeStart: start, rangeEnd: end };
+      const profileRaw = await api.get<{ company_name?: string; company_logo_id?: string; website_url?: string }>("couriers/profile").catch(() => ({}));
+      const companyName = (profileRaw as any)?.company_name ?? undefined;
+      const companyWebsite = (profileRaw as any)?.website_url ?? undefined;
+      const logoId = (profileRaw as any)?.company_logo_id ?? null;
+      const companyLogo = logoId ? await fetchLogoAsDataUrl(logoId, getValidAccessToken).catch(() => null) ?? undefined : undefined;
+      const ctx = { driver, metrics, rangeStart: start, rangeEnd: end, companyName, companyWebsite, companyLogo };
       if (format === "pdf") await exportDriverReportPdf(ctx);
       else await exportDriverReportExcel(ctx);
     } finally {

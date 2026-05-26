@@ -1,12 +1,16 @@
 import type { Driver } from "@/types/api";
 import type { DriverMetrics } from "@/lib/driver-metrics";
 import { formatDuration } from "@/lib/driver-metrics";
+import { drawPdfHeader } from "@/lib/report-utils";
 
-interface ReportContext {
+export interface ReportContext {
   driver: Driver;
   metrics: DriverMetrics;
   rangeStart: Date;
   rangeEnd: Date;
+  companyName?: string;
+  companyWebsite?: string;
+  companyLogo?: string;
 }
 
 function fullName(d: Driver): string {
@@ -62,24 +66,19 @@ export async function exportDriverReportPdf(ctx: ReportContext): Promise<void> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const margin = 40;
 
-  // Title
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.text("Driver Performance Report", margin, 60);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(110);
-  doc.text(fullName(ctx.driver), margin, 80);
-  doc.text(
-    `${fmtDate(ctx.rangeStart)} – ${fmtDate(ctx.rangeEnd)}`,
+  const startY = drawPdfHeader(doc, {
+    title: "Driver Performance Report",
+    subtitle: fullName(ctx.driver),
+    dateRange: `${fmtDate(ctx.rangeStart)} – ${fmtDate(ctx.rangeEnd)}`,
+    companyName: ctx.companyName,
+    companyWebsite: ctx.companyWebsite,
+    companyLogo: ctx.companyLogo,
     margin,
-    96,
-  );
-  doc.setTextColor(0);
+  });
 
   // Driver info table
   autoTable(doc, {
-    startY: 120,
+    startY,
     head: [["Driver Information", ""]],
     body: buildSummaryRows(ctx),
     theme: "striped",

@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { exportOperationsReportPdf, exportOperationsReportExcel } from "@/lib/operations-report";
 import { useApi } from "@/hooks/use-api";
+import { useAuth } from "@/context/AuthContext";
+import { fetchLogoAsDataUrl } from "@/lib/report-utils";
 import type { Shipment, ShipmentListResponse } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { useDrivers } from "@/hooks/queries/use-drivers";
@@ -60,6 +62,7 @@ export default function ReportsPage() {
   const { locale } = useLocale();
   const { companyId, isLoading: companyLoading } = useCompanyId();
   const api = useApi();
+  const { getValidAccessToken } = useAuth();
   const [exporting, setExporting] = useState<"pdf" | "excel" | null>(null);
   
   const { start, end, priorStart, priorEnd } = useMemo(() => getPeriodRanges(), []);
@@ -183,14 +186,19 @@ export default function ReportsPage() {
         if (allShipments.length >= res.total || (res.shipments ?? []).length < 100) break;
         page++;
       }
-      const profileRaw = await api.get<{ company_name?: string }>("couriers/profile").catch(() => ({}));
+      const profileRaw = await api.get<{ company_name?: string; company_logo_id?: string; website_url?: string }>("couriers/profile").catch(() => ({}));
       const companyName = (profileRaw as any)?.company_name ?? undefined;
+      const companyWebsite = (profileRaw as any)?.website_url ?? undefined;
+      const logoId = (profileRaw as any)?.company_logo_id ?? null;
+      const companyLogo = logoId ? await fetchLogoAsDataUrl(logoId, getValidAccessToken).catch(() => null) ?? undefined : undefined;
       const fleet = computeFleetMetrics(drivers ?? [], allShipments);
       const ctx = {
         fleet,
         rangeStart: start,
         rangeEnd: end,
         companyName,
+        companyWebsite,
+        companyLogo,
         shipments: allShipments,
         drivers: drivers ?? [],
       };

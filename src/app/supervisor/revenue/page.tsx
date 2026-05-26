@@ -47,6 +47,8 @@ import { useDrivers } from "@/hooks/queries/use-drivers";
 import { useShipments } from "@/hooks/queries/use-shipments";
 import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { useApi } from "@/hooks/use-api";
+import { useAuth } from "@/context/AuthContext";
+import { fetchLogoAsDataUrl } from "@/lib/report-utils";
 import type { Shipment, ShipmentListResponse } from "@/types/api";
 import {
   computeRevenueMetrics,
@@ -95,6 +97,7 @@ export default function RevenuePage() {
   const router = useRouter();
   const { companyId, isLoading: companyLoading } = useCompanyId();
   const api = useApi();
+  const { getValidAccessToken } = useAuth();
   const { locale: currentLocale } = useLocale();
   const t = useI18n("revenue");
   
@@ -163,14 +166,19 @@ export default function RevenuePage() {
         page++;
       }
 
-      const profileRaw = await api.get<{ company_name?: string }>("couriers/profile").catch(() => ({}));
+      const profileRaw = await api.get<{ company_name?: string; company_logo_id?: string; website_url?: string }>("couriers/profile").catch(() => ({}));
       const companyName = (profileRaw as any)?.company_name ?? undefined;
+      const companyWebsite = (profileRaw as any)?.website_url ?? undefined;
+      const logoId = (profileRaw as any)?.company_logo_id ?? null;
+      const companyLogo = logoId ? await fetchLogoAsDataUrl(logoId, getValidAccessToken).catch(() => null) ?? undefined : undefined;
 
       const ctx = {
         metrics,
         rangeStart: start,
         rangeEnd: end,
         companyName,
+        companyWebsite,
+        companyLogo,
         shipments: allShipments,
         drivers: drivers ?? [],
       };

@@ -1,6 +1,7 @@
 import type { Driver, Shipment } from "@/types/api";
 import type { FleetMetrics } from "@/lib/fleet-metrics";
 import { formatDuration } from "@/lib/driver-metrics";
+import { drawPdfHeader } from "@/lib/report-utils";
 
 export interface OperationsReportContext {
   fleet: FleetMetrics;
@@ -9,6 +10,8 @@ export interface OperationsReportContext {
   rangeStart: Date;
   rangeEnd: Date;
   companyName?: string;
+  companyWebsite?: string;
+  companyLogo?: string;
 }
 
 function fmtDate(d: Date): string {
@@ -184,19 +187,18 @@ export async function exportOperationsReportPdf(ctx: OperationsReportContext): P
     fontStyle: "bold" as const,
   };
 
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.text("Operations Report", margin, 60);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(110);
-  if (ctx.companyName) doc.text(ctx.companyName, margin, 80);
-  doc.text(`${fmtDate(ctx.rangeStart)} – ${fmtDate(ctx.rangeEnd)}`, margin, ctx.companyName ? 96 : 80);
-  doc.setTextColor(0);
+  const startY = drawPdfHeader(doc, {
+    title: "Operations Report",
+    dateRange: `${fmtDate(ctx.rangeStart)} – ${fmtDate(ctx.rangeEnd)}`,
+    companyName: ctx.companyName,
+    companyWebsite: ctx.companyWebsite,
+    companyLogo: ctx.companyLogo,
+    margin,
+  });
 
   // Executive Summary
   autoTable(doc, {
-    startY: 120,
+    startY,
     head: [["Metric", "Value"]],
     body: buildSummaryRows(ctx),
     theme: "striped",
