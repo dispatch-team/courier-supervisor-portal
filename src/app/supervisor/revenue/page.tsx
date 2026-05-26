@@ -72,8 +72,10 @@ const PRESET_DAYS: Record<Exclude<RangePreset, "custom">, number> = {
 
 function getPresetRange(preset: Exclude<RangePreset, "custom">): { start: Date; end: Date } {
   const end = new Date();
+  end.setUTCHours(23, 59, 59, 999);
   const start = new Date();
-  start.setDate(start.getDate() - PRESET_DAYS[preset]);
+  start.setUTCDate(start.getUTCDate() - PRESET_DAYS[preset]);
+  start.setUTCHours(0, 0, 0, 0);
   return { start, end };
 }
 

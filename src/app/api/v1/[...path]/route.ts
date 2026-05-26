@@ -33,6 +33,12 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
 
   try {
     const res = await fetch(url.toString(), init);
+
+    // 204/205 must have no body — return immediately
+    if (res.status === 204 || res.status === 205) {
+      return new NextResponse(null, { status: res.status });
+    }
+
     const contentType = res.headers.get("Content-Type") ?? "application/json";
     const isJson = contentType.includes("application/json") || contentType.includes("text/");
 

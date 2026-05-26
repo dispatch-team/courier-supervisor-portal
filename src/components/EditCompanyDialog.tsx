@@ -18,6 +18,7 @@ import { friendlyError } from "@/lib/api-client";
 import type { NormalizedCourierProfile } from "@/lib/courierProfile";
 import { cn } from "@/lib/utils";
 import { validatePhone, validateEmail, validateUrl } from "@/lib/validation";
+import { useI18n, useTranslateValidationError } from "@/intl";
 
 interface EditCompanyDialogProps {
   profile: NormalizedCourierProfile;
@@ -27,6 +28,8 @@ interface EditCompanyDialogProps {
 }
 
 export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: EditCompanyDialogProps) {
+  const t = useI18n("profile");
+  const tVal = useTranslateValidationError();
   const { toast } = useToast();
   const { mutateAsync, isPending } = useUpdateCourier(profile.id);
 
@@ -57,6 +60,9 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
     const urlErr = validateUrl(form.website_url, false); if (urlErr) e.website_url = urlErr;
     if (form.max_weight && Number(form.max_weight) > 10_000) e.max_weight = "Max weight cannot exceed 10,000 kg";
     if (form.base_price && Number(form.base_price) > 100_000) e.base_price = "Base price cannot exceed 100,000 ETB";
+    if (form.weight_rate && Number(form.weight_rate) > 10_000) e.weight_rate = "Weight rate cannot exceed 10,000 ETB/kg";
+    if (form.distance_rate && Number(form.distance_rate) > 10_000) e.distance_rate = "Distance rate cannot exceed 10,000 ETB/km";
+    if (form.time_rate && Number(form.time_rate) > 10_000) e.time_rate = "Time rate cannot exceed 10,000 ETB/min";
     return e;
   }
 
@@ -120,7 +126,7 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
         time_rate: form.time_rate ? Number(form.time_rate) : undefined,
         company_logo: logoFile,
       });
-      toast({ title: "Company profile updated successfully." });
+      toast({ title: t("editDialog.success") });
       onOpenChange(false);
       onSuccess();
     } catch (err) {
@@ -128,20 +134,31 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
     }
   }
 
+  const translateFieldError = (fieldName: string, rawError: string) => {
+    if (rawError === "Company name is required") return t("editDialog.errors.companyNameRequired");
+    if (rawError === "Address is required") return t("editDialog.errors.addressRequired");
+    if (rawError === "Max weight cannot exceed 10,000 kg") return t("editDialog.errors.maxWeightExceeded");
+    if (rawError === "Base price cannot exceed 100,000 ETB") return t("editDialog.errors.basePriceExceeded");
+    if (rawError === "Weight rate cannot exceed 10,000 ETB/kg") return t("editDialog.errors.weightRateExceeded");
+    if (rawError === "Distance rate cannot exceed 10,000 ETB/km") return t("editDialog.errors.distanceRateExceeded");
+    if (rawError === "Time rate cannot exceed 10,000 ETB/min") return t("editDialog.errors.timeRateExceeded");
+    return tVal(rawError);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
-            Edit Company Profile
+            {t("editDialog.title")}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Logo upload */}
           <div className="space-y-2">
-            <Label>Company Logo</Label>
+            <Label>{t("editDialog.logo")}</Label>
             <div className="flex items-center gap-4">
               <div className={cn(
                 "h-20 w-20 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden shrink-0",
@@ -162,7 +179,7 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload className="h-3.5 w-3.5" />
-                  {logoPreview ? "Change logo" : "Upload logo"}
+                  {logoPreview ? t("editDialog.changeLogo") : t("editDialog.uploadLogo")}
                 </Button>
                 {logoPreview && (
                   <Button
@@ -173,10 +190,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                     onClick={clearLogo}
                   >
                     <X className="h-3.5 w-3.5" />
-                    Remove
+                    {t("editDialog.remove")}
                   </Button>
                 )}
-                <p className="text-xs text-muted-foreground">JPG, PNG or WEBP. Max 5MB.</p>
+                <p className="text-xs text-muted-foreground">{t("editDialog.logoTip")}</p>
               </div>
             </div>
             <input
@@ -191,7 +208,7 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
           {/* Company info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="company_name">Company Name *</Label>
+              <Label htmlFor="company_name">{t("editDialog.companyName")}</Label>
               <Input
                 id="company_name"
                 value={form.company_name}
@@ -200,10 +217,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 maxLength={100}
                 className={fieldErrors.company_name ? "border-destructive/60" : ""}
               />
-              {fieldErrors.company_name && <p className="text-xs text-destructive">{fieldErrors.company_name}</p>}
+              {fieldErrors.company_name && <p className="text-xs text-destructive">{translateFieldError("company_name", fieldErrors.company_name)}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="company_address">Address *</Label>
+              <Label htmlFor="company_address">{t("editDialog.address")}</Label>
               <Input
                 id="company_address"
                 value={form.company_address}
@@ -212,10 +229,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 maxLength={200}
                 className={fieldErrors.company_address ? "border-destructive/60" : ""}
               />
-              {fieldErrors.company_address && <p className="text-xs text-destructive">{fieldErrors.company_address}</p>}
+              {fieldErrors.company_address && <p className="text-xs text-destructive">{translateFieldError("company_address", fieldErrors.company_address)}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone_number">Phone Number *</Label>
+              <Label htmlFor="phone_number">{t("editDialog.phone")}</Label>
               <Input
                 id="phone_number"
                 value={form.phone_number}
@@ -223,10 +240,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 placeholder="09XXXXXXXX or +2519XXXXXXXX"
                 className={fieldErrors.phone_number ? "border-destructive/60" : ""}
               />
-              {fieldErrors.phone_number && <p className="text-xs text-destructive">{fieldErrors.phone_number}</p>}
+              {fieldErrors.phone_number && <p className="text-xs text-destructive">{translateFieldError("phone_number", fieldErrors.phone_number)}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("editDialog.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -236,10 +253,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 maxLength={255}
                 className={fieldErrors.email ? "border-destructive/60" : ""}
               />
-              {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
+              {fieldErrors.email && <p className="text-xs text-destructive">{translateFieldError("email", fieldErrors.email)}</p>}
             </div>
             <div className="space-y-1.5 md:col-span-2">
-              <Label htmlFor="website_url">Website URL</Label>
+              <Label htmlFor="website_url">{t("editDialog.website")}</Label>
               <Input
                 id="website_url"
                 value={form.website_url}
@@ -247,16 +264,16 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                 placeholder="https://yourcompany.com"
                 className={fieldErrors.website_url ? "border-destructive/60" : ""}
               />
-              {fieldErrors.website_url && <p className="text-xs text-destructive">{fieldErrors.website_url}</p>}
+              {fieldErrors.website_url && <p className="text-xs text-destructive">{translateFieldError("website_url", fieldErrors.website_url)}</p>}
             </div>
           </div>
 
           {/* Pricing */}
           <div className="space-y-3">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Pricing & Capacity</p>
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t("editDialog.pricingSection")}</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="max_weight">Max Weight (kg)</Label>
+                <Label htmlFor="max_weight">{t("editDialog.maxWeight")}</Label>
                 <Input
                   id="max_weight"
                   type="number"
@@ -267,10 +284,10 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                   onChange={(e) => set("max_weight", e.target.value)}
                   placeholder="0"
                 />
-                {fieldErrors.max_weight && <p className="text-xs text-destructive">{fieldErrors.max_weight}</p>}
+                {fieldErrors.max_weight && <p className="text-xs text-destructive">{translateFieldError("max_weight", fieldErrors.max_weight)}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="base_price">Base Price (ETB)</Label>
+                <Label htmlFor="base_price">{t("editDialog.basePrice")}</Label>
                 <Input
                   id="base_price"
                   type="number"
@@ -281,43 +298,49 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
                   onChange={(e) => set("base_price", e.target.value)}
                   placeholder="0.00"
                 />
-                {fieldErrors.base_price && <p className="text-xs text-destructive">{fieldErrors.base_price}</p>}
+                {fieldErrors.base_price && <p className="text-xs text-destructive">{translateFieldError("base_price", fieldErrors.base_price)}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="weight_rate">Weight Rate (ETB/kg)</Label>
+                <Label htmlFor="weight_rate">{t("editDialog.weightRate")}</Label>
                 <Input
                   id="weight_rate"
                   type="number"
                   min="0"
+                  max="10000"
                   step="0.01"
                   value={form.weight_rate}
                   onChange={(e) => set("weight_rate", e.target.value)}
                   placeholder="0.00"
                 />
+                 {fieldErrors.weight_rate && <p className="text-xs text-destructive">{translateFieldError("weight_rate", fieldErrors.weight_rate)}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="distance_rate">Distance Rate (ETB/km)</Label>
+                <Label htmlFor="distance_rate">{t("editDialog.distanceRate")}</Label>
                 <Input
                   id="distance_rate"
                   type="number"
                   min="0"
+                  max="10000"
                   step="0.01"
                   value={form.distance_rate}
                   onChange={(e) => set("distance_rate", e.target.value)}
                   placeholder="0.00"
                 />
+                {fieldErrors.distance_rate && <p className="text-xs text-destructive">{translateFieldError("distance_rate", fieldErrors.distance_rate)}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="time_rate">Time Rate (ETB/min)</Label>
+                <Label htmlFor="time_rate">{t("editDialog.timeRate")}</Label>
                 <Input
                   id="time_rate"
                   type="number"
                   min="0"
+                  max="10000"
                   step="0.01"
                   value={form.time_rate}
                   onChange={(e) => set("time_rate", e.target.value)}
                   placeholder="0.00"
                 />
+                {fieldErrors.time_rate && <p className="text-xs text-destructive">{translateFieldError("time_rate", fieldErrors.time_rate)}</p>}
               </div>
             </div>
           </div>
@@ -331,11 +354,11 @@ export function EditCompanyDialog({ profile, open, onOpenChange, onSuccess }: Ed
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Cancel
+              {t("editDialog.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Save Changes
+              {t("editDialog.submit")}
             </Button>
           </DialogFooter>
         </form>

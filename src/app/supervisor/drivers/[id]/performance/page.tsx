@@ -71,9 +71,11 @@ const PRESETS: { id: Exclude<RangePreset, "custom">; label: string; days: number
 
 function getPresetRange(preset: Exclude<RangePreset, "custom">): { start: Date; end: Date } {
   const end = new Date();
+  end.setUTCHours(23, 59, 59, 999);
   const start = new Date();
   const days = PRESETS.find((p) => p.id === preset)?.days ?? 30;
-  start.setDate(start.getDate() - days);
+  start.setUTCDate(start.getUTCDate() - days);
+  start.setUTCHours(0, 0, 0, 0);
   return { start, end };
 }
 

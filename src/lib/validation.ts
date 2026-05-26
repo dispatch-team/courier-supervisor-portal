@@ -50,3 +50,15 @@ export function validateName(raw: string, label: string, required = true): strin
   if (v.length > NAME_MAX) return `${label} must be under ${NAME_MAX} characters`;
   return null;
 }
+
+// Ethiopian license plate: 2–3 uppercase letters + hyphen or space + 5 digits
+// e.g. AA-12345, OR 54321, TGR-00001
+export const ETHIOPIAN_PLATE_RE = /^[A-Z]{2,3}[\s-]\d{5}$/;
+
+export function validateLicensePlate(raw: string): string | null {
+  const v = raw.trim().toUpperCase();
+  if (!v) return "License plate is required";
+  if (!ETHIOPIAN_PLATE_RE.test(v))
+    return 'Use format AA-12345 (2–3 letters, hyphen, 5 digits)';
+  return null;
+}

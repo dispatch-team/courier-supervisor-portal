@@ -71,12 +71,12 @@ export function computeDriverMetrics(
   // Daily volume — zero-fill across the entire range so the chart is a real time series
   const dailyMap = new Map<string, { delivered: number; failed: number }>();
   const cursor = new Date(rangeStart);
-  cursor.setHours(0, 0, 0, 0);
+  cursor.setUTCHours(0, 0, 0, 0);
   const stop = new Date(rangeEnd);
-  stop.setHours(0, 0, 0, 0);
+  stop.setUTCHours(0, 0, 0, 0);
   while (cursor <= stop) {
     dailyMap.set(toDateKey(cursor.toISOString()), { delivered: 0, failed: 0 });
-    cursor.setDate(cursor.getDate() + 1);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
   for (const s of delivered) {
     if (!s.delivered_at) continue;

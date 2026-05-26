@@ -62,12 +62,12 @@ export function computeRevenueMetrics(
   // Daily revenue — zero-fill across the range
   const dailyMap = new Map<string, { revenue: number; count: number }>();
   const cursor = new Date(rangeStart);
-  cursor.setHours(0, 0, 0, 0);
+  cursor.setUTCHours(0, 0, 0, 0);
   const stop = new Date(rangeEnd);
-  stop.setHours(0, 0, 0, 0);
+  stop.setUTCHours(0, 0, 0, 0);
   while (cursor <= stop) {
     dailyMap.set(toDateKey(cursor.toISOString()), { revenue: 0, count: 0 });
-    cursor.setDate(cursor.getDate() + 1);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
   for (const s of currentDelivered) {
     if (!s.delivered_at) continue;

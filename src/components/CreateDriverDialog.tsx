@@ -13,7 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Shuffle } from "lucide-react";
 import { useCreateDriver } from "@/hooks/queries/use-create-driver";
-import { validateName, validateEmail, validatePhone, validatePassword as validatePw } from "@/lib/validation";
+import { validateName, validateEmail, validatePhone, validatePassword as validatePw, validateLicensePlate } from "@/lib/validation";
+import { useI18n, useTranslateValidationError } from "@/intl";
 
 interface CreateDriverDialogProps {
   courierCompanyId: number | undefined;
@@ -91,8 +92,11 @@ function validateForm(form: FormState): Record<string, string> {
   const ecErr = validatePhone(form.emergency_contact);
   if (ecErr) errors.emergency_contact = ecErr;
 
-  if (!form.vehicle_type.trim()) errors.vehicle_type = "Vehicle type is required";
-  if (!form.license_plate.trim()) errors.license_plate = "License plate is required";
+  const validVehicles = ["Motorcycle", "Bicycle", "Car", "Van", "Truck", "Other"];
+  if (!form.vehicle_type) errors.vehicle_type = "Vehicle type is required";
+  else if (!validVehicles.includes(form.vehicle_type)) errors.vehicle_type = "Select a valid vehicle type";
+  const plateErr = validateLicensePlate(form.license_plate);
+  if (plateErr) errors.license_plate = plateErr;
 
   const pwErr = validatePw(form.password);
   if (pwErr) errors.password = pwErr;
@@ -108,6 +112,9 @@ export function CreateDriverDialog({
   open,
   onOpenChange,
 }: CreateDriverDialogProps) {
+  const t = useI18n("drivers");
+  const tVal = useTranslateValidationError();
+
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -141,7 +148,7 @@ export function CreateDriverDialog({
         email: form.email.trim(),
         phone_number: form.phone_number.replace(/\s/g, ""),
         vehicle_type: form.vehicle_type.trim(),
-        license_plate: form.license_plate.trim(),
+        license_plate: form.license_plate.trim().toUpperCase(),
         emergency_contact: form.emergency_contact.trim(),
         password: form.password,
       },
@@ -168,9 +175,9 @@ export function CreateDriverDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add New Driver</DialogTitle>
+          <DialogTitle>{t("dialogs.create.title")}</DialogTitle>
           <DialogDescription>
-            Create a driver account for your courier company
+            {t("dialogs.create.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -180,31 +187,31 @@ export function CreateDriverDialog({
               <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  Driver created successfully
+                  {t("dialogs.create.success")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Driver ID: #{createdDriver.id}
+                  {t("dialogs.create.driverId", { id: String(createdDriver.id) })}
                 </p>
               </div>
             </div>
             <div className="p-3 rounded-lg bg-muted/50 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Credentials</p>
+              <p className="text-xs font-medium text-muted-foreground">{t("dialogs.create.credentials")}</p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-xs text-muted-foreground">{t("dialogs.create.email").replace(" *", "")}</p>
                   <p className="font-mono">{form.email}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Password</p>
+                  <p className="text-xs text-muted-foreground">{t("dialogs.create.passwordLabel").replace(" *", "")}</p>
                   <p className="font-mono">{createdDriver.password}</p>
                 </div>
               </div>
               <p className="text-xs text-amber-500 mt-2">
-                Save these credentials — the password cannot be retrieved later.
+                {t("dialogs.create.saveCredentialsNote")}
               </p>
             </div>
             <DialogFooter>
-              <Button onClick={handleClose}>Done</Button>
+              <Button onClick={handleClose}>{t("dialogs.done")}</Button>
             </DialogFooter>
           </div>
         ) : (
@@ -213,23 +220,23 @@ export function CreateDriverDialog({
               {/* Name Row */}
               <div className="grid grid-cols-3 gap-3">
                 <Field
-                  label="First Name *"
+                  label={t("dialogs.create.firstName")}
                   value={form.first_name}
                   onChange={(v) => updateField("first_name", v)}
-                  error={errors.first_name}
+                  error={tVal(errors.first_name) || undefined}
                   placeholder="Abel"
                 />
                 <Field
-                  label="Middle Name"
+                  label={t("dialogs.create.middleName")}
                   value={form.middle_name}
                   onChange={(v) => updateField("middle_name", v)}
                   placeholder="Tesfaye"
                 />
                 <Field
-                  label="Last Name *"
+                  label={t("dialogs.create.lastName")}
                   value={form.last_name}
                   onChange={(v) => updateField("last_name", v)}
-                  error={errors.last_name}
+                  error={tVal(errors.last_name) || undefined}
                   placeholder="Kebede"
                 />
               </div>
@@ -237,18 +244,18 @@ export function CreateDriverDialog({
               {/* Contact Row */}
               <div className="grid grid-cols-2 gap-3">
                 <Field
-                  label="Email *"
+                  label={t("dialogs.create.email")}
                   value={form.email}
                   onChange={(v) => updateField("email", v)}
-                  error={errors.email}
+                  error={tVal(errors.email) || undefined}
                   placeholder="driver@company.com"
                   type="email"
                 />
                 <Field
-                  label="Phone Number *"
+                  label={t("dialogs.create.phone")}
                   value={form.phone_number}
                   onChange={(v) => updateField("phone_number", v)}
-                  error={errors.phone_number}
+                  error={tVal(errors.phone_number) || undefined}
                   placeholder="09XXXXXXXX or +2519XXXXXXXX"
                   type="tel"
                 />
@@ -256,35 +263,51 @@ export function CreateDriverDialog({
 
               {/* Vehicle & License Row */}
               <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">{t("dialogs.create.vehicleType")}</label>
+                  <select
+                    value={form.vehicle_type}
+                    onChange={(e) => updateField("vehicle_type", e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">{t("dialogs.create.selectType")}</option>
+                    {[
+                      { key: "motorcycle", label: "Motorcycle" },
+                      { key: "bicycle", label: "Bicycle" },
+                      { key: "car", label: "Car" },
+                      { key: "van", label: "Van" },
+                      { key: "truck", label: "Truck" },
+                      { key: "other", label: "Other" }
+                    ].map((v) => (
+                      <option key={v.key} value={v.label}>
+                        {t(`dialogs.create.vehicleTypes.${v.key}` as any)}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.vehicle_type && <p className="text-xs text-destructive">{tVal(errors.vehicle_type)}</p>}
+                </div>
                 <Field
-                  label="Vehicle Type *"
-                  value={form.vehicle_type}
-                  onChange={(v) => updateField("vehicle_type", v)}
-                  error={errors.vehicle_type}
-                  placeholder="Motorcycle, Car, Van..."
-                />
-                <Field
-                  label="License Plate *"
+                  label={t("dialogs.create.licensePlate")}
                   value={form.license_plate}
-                  onChange={(v) => updateField("license_plate", v)}
-                  error={errors.license_plate}
+                  onChange={(v) => updateField("license_plate", v.toUpperCase())}
+                  error={tVal(errors.license_plate) || undefined}
                   placeholder="AA-12345"
                 />
               </div>
 
               {/* Emergency Contact */}
               <Field
-                label="Emergency Contact *"
+                label={t("dialogs.create.emergencyContact")}
                 value={form.emergency_contact}
                 onChange={(v) => updateField("emergency_contact", v)}
-                error={errors.emergency_contact}
+                error={tVal(errors.emergency_contact) || undefined}
                 placeholder="09XXXXXXXX or +2519XXXXXXXX"
                 type="tel"
               />
 
               {/* Password Mode Toggle */}
               <div className="space-y-3">
-                <label className="text-xs font-medium text-muted-foreground">Password *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("dialogs.create.passwordLabel")}</label>
                 <div className="flex gap-1 p-0.5 bg-muted/30 rounded-md w-fit">
                   <button
                     type="button"
@@ -299,7 +322,7 @@ export function CreateDriverDialog({
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Auto-generate
+                    {t("dialogs.create.autoGenerate")}
                   </button>
                   <button
                     type="button"
@@ -313,7 +336,7 @@ export function CreateDriverDialog({
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Set custom
+                    {t("dialogs.create.setCustom")}
                   </button>
                 </div>
 
@@ -335,7 +358,7 @@ export function CreateDriverDialog({
                       onClick={handleGenerate}
                     >
                       <Shuffle className="h-3 w-3" />
-                      Regenerate
+                      {t("dialogs.create.regenerate")}
                     </Button>
                   </div>
                 ) : (
@@ -345,7 +368,7 @@ export function CreateDriverDialog({
                         type={showPassword ? "text" : "password"}
                         value={form.password}
                         onChange={(e) => updateField("password", e.target.value)}
-                        placeholder="Enter password"
+                        placeholder={t("dialogs.create.enterPassword")}
                         className={inputClass}
                       />
                       <button
@@ -360,19 +383,19 @@ export function CreateDriverDialog({
                       type={showPassword ? "text" : "password"}
                       value={form.confirm_password}
                       onChange={(e) => updateField("confirm_password", e.target.value)}
-                      placeholder="Confirm password"
+                      placeholder={t("dialogs.create.confirmPassword")}
                       className={inputClass}
                     />
                     {errors.confirm_password && (
-                      <p className="text-xs text-destructive">{errors.confirm_password}</p>
+                      <p className="text-xs text-destructive">{tVal(errors.confirm_password)}</p>
                     )}
                     <p className="text-[11px] text-muted-foreground">
-                      Min 8 chars, uppercase, lowercase, number, special character
+                      {t("dialogs.create.passwordRule")}
                     </p>
                   </div>
                 )}
                 {errors.password && (
-                  <p className="text-xs text-destructive">{errors.password}</p>
+                  <p className="text-xs text-destructive">{tVal(errors.password)}</p>
                 )}
               </div>
 
@@ -389,11 +412,11 @@ export function CreateDriverDialog({
 
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>
-                Cancel
+                {t("dialogs.cancel")}
               </Button>
               <Button onClick={handleSubmit} disabled={createMutation.isPending}>
                 {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Create Driver
+                {t("dialogs.create.submit")}
               </Button>
             </DialogFooter>
           </>
