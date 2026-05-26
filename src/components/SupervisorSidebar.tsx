@@ -102,7 +102,7 @@ export function SupervisorSidebar() {
               transition={{ duration: 0.2 }}
               className="w-full flex justify-center"
             >
-              <img src={dispatchIcon.src} alt="Dispatch Icon" className="h-14 w-14 object-contain drop-shadow-[0_0_15px_hsl(270,70%,60%,0.2)]" />
+              <img src={dispatchIcon.src} alt="Dispatch Icon" className="h-10 w-10 object-contain drop-shadow-[0_0_15px_hsl(270,70%,60%,0.2)]" />
             </motion.div>
           )}
         </AnimatePresence>
