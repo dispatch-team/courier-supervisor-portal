@@ -57,7 +57,9 @@ export function DeactivateDriverDialog({
       setSuccess(false);
       updateMutation.reset();
     }
-  }, [open, updateMutation]);
+    // updateMutation excluded intentionally — it's a new object reference every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleDeactivate = () => {
     if (!driver || !companyId) return;
