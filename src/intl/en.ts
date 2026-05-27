@@ -532,7 +532,7 @@ const en = {
       title: "Assign Driver",
       description: "Assign a driver to shipment {code}",
       cannotAssign: "Cannot assign a driver to a shipment that is already {status}.",
-      alreadyAssigned: "This shipment is already assigned to Driver #{id}. Assigning a new driver will reassign it.",
+      alreadyAssigned: "This shipment is already assigned to {name}. Assigning a new driver will reassign it.",
       summary: {
         description: "Description:",
         route: "Route:",

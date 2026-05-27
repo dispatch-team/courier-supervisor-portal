@@ -130,7 +130,11 @@ export function AssignDriverDialog({
               <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
                 <p className="text-sm text-amber-700 dark:text-amber-400">
-                  {t("assignDialog.alreadyAssigned", { id: String(shipment.assigned_driver_id) })}
+                  {t("assignDialog.alreadyAssigned", {
+                    name: drivers?.find((d) => d.id === shipment.assigned_driver_id)
+                      ? `${drivers.find((d) => d.id === shipment.assigned_driver_id)!.first_name} ${drivers.find((d) => d.id === shipment.assigned_driver_id)!.last_name}`
+                      : `Driver #${shipment.assigned_driver_id}`,
+                  })}
                 </p>
               </div>
             )}

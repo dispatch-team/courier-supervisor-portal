@@ -531,7 +531,7 @@ const am: Messages = {
       title: "ሾፌር መድብ",
       description: "ለጭነት {code} ሾፌር መድብ",
       cannotAssign: "ቀድሞውኑ {status} ለሆነ ጭነት ሾፌር መመደብ አይቻልም።",
-      alreadyAssigned: "ይህ ጭነት ቀድሞውኑ ለሾፌር #{id} ተመድቧል። አዲስ ሾፌር መመደብ ቀድሞ የተመደበውን ይቀይረዋል።",
+      alreadyAssigned: "ይህ ጭነት ቀድሞውኑ ለ{name} ተመድቧል። አዲስ ሾፌር መመደብ ቀድሞ የተመደበውን ይቀይረዋል።",
       summary: {
         description: "መግለጫ፦",
         route: "መንገድ፦",
