@@ -13,7 +13,7 @@ export interface ShipmentFilters {
   created_at_end?: string;
 }
 
-function buildQuery(filters: ShipmentFilters): string {
+export function buildQuery(filters: ShipmentFilters): string {
   const params = new URLSearchParams();
   if (filters.page) params.set("page", String(filters.page));
   if (filters.page_size) params.set("page_size", String(filters.page_size));

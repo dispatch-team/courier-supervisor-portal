@@ -1,0 +1,61 @@
+import type { Driver, Shipment } from '@/types/api'
+
+export function makeDriver(overrides: Partial<Driver> = {}): Driver {
+  return {
+    id: 1,
+    keycloak_id: 'kc-001',
+    first_name: 'Abebe',
+    middle_name: '',
+    last_name: 'Bekele',
+    email: 'abebe@test.com',
+    phone_number: '0911234567',
+    courier_company_id: 10,
+    status: 'active',
+    profile_picture_id: null,
+    additional_documents_id: null,
+    rating_aggregate: 8,
+    rating_count: 5,
+    vehicle_type: 'motorcycle',
+    license_plate: 'AA-12345',
+    emergency_contact: '0911111111',
+    ...overrides,
+  }
+}
+
+export function makeShipment(overrides: Partial<Shipment> = {}): Shipment {
+  return {
+    id: 1,
+    code: 'SHP-001',
+    merchant_id: 100,
+    merchant_user_id: 'muid-001',
+    description: 'Test shipment',
+    items: [],
+    weight_kg: 1,
+    dimensions: '10x10x10',
+    total_fee: 150,
+    status: 'delivered',
+    remark: '',
+    courier_company_id: 10,
+    assigned_driver_id: 1,
+    start_address: '123 Main St',
+    start_address_contact_name: 'Alice',
+    start_address_phone_number: '0911000001',
+    start_address_additional_contact: '',
+    end_address: '456 End St',
+    end_address_contact_name: 'Bob',
+    end_address_phone_number: '0911000002',
+    end_address_additional_contact: '',
+    rating: 0,
+    webhook_url: '',
+    delivered_at: '2024-01-15T10:00:00Z',
+    assigned_to_courier_at: '2024-01-15T08:00:00Z',
+    assigned_to_driver_at: '2024-01-15T08:30:00Z',
+    picked_up_at: '2024-01-15T09:00:00Z',
+    in_transit_at: '2024-01-15T09:15:00Z',
+    failed_at: null,
+    returned_at: null,
+    cancelled_at: null,
+    created_at: '2024-01-15T07:00:00Z',
+    ...overrides,
+  }
+}
