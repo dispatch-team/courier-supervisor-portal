@@ -42,6 +42,8 @@ import {
   X,
 } from "lucide-react";
 import { useShipments, type ShipmentFilters } from "@/hooks/queries/use-shipments";
+import { useDrivers } from "@/hooks/queries/use-drivers";
+import { useCompanyId } from "@/hooks/queries/use-company-id";
 import { cn } from "@/lib/utils";
 import type { Shipment, ShipmentStatus } from "@/types/api";
 import { ShipmentsPageSkeleton } from "@/components/skeletons";
@@ -153,6 +155,13 @@ export default function ShipmentsPage() {
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
   const [batchDialogOpen, setBatchDialogOpen] = useState(false);
   const [assignShipment, setAssignShipment] = useState<Shipment | null>(null);
+
+  const { companyId } = useCompanyId();
+  const { data: driversData } = useDrivers(companyId);
+  const driverMap = useMemo(
+    () => new Map((driversData ?? []).map((d) => [d.id, `${d.first_name} ${d.last_name}`])),
+    [driversData],
+  );
 
   const queryFilters: ShipmentFilters = {
     page,
@@ -377,7 +386,7 @@ export default function ShipmentsPage() {
                     <TableCell className="hidden md:table-cell">
                       <span className="text-sm">
                         {shipment.assigned_driver_id
-                          ? `${t("table.driver")} #${shipment.assigned_driver_id}`
+                          ? (driverMap.get(shipment.assigned_driver_id) ?? `${t("table.driver")} #${shipment.assigned_driver_id}`)
                           : <span className="text-muted-foreground">{t("status.unassigned")}</span>}
                       </span>
                     </TableCell>
