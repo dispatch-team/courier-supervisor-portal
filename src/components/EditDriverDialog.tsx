@@ -99,7 +99,9 @@ export function EditDriverDialog({
       setChangedFields(null);
       updateMutation.reset();
     }
-  }, [driver, updateMutation]);
+    // updateMutation excluded intentionally — new object reference every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [driver]);
 
   const updateField = (key: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
