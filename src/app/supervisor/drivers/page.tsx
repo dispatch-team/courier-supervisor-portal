@@ -121,9 +121,9 @@ export default function DriversPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Failed to load drivers</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("errorLoad")}</h3>
         <p className="text-muted-foreground mb-4">{friendlyError(error)}</p>
-        <Button onClick={() => refetch()}>Try Again</Button>
+        <Button onClick={() => refetch()}>{t("retry" as any)}</Button>
       </div>
     );
   }
@@ -200,7 +200,7 @@ export default function DriversPage() {
                       setSelectedIds(new Set());
                     }
                   }}
-                  aria-label="Select all drivers"
+                  aria-label={t("selectAllDrivers" as any)}
                 />
               </TableHead>
               <TableHead>{t("table.driver")}</TableHead>

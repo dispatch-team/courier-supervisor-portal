@@ -226,6 +226,10 @@ const am: Messages = {
     noProfileDataDesc: "የፕሮፋይል መረጃ የለም። እባክዎ አስተዳዳሪውን ያነጋግሩ።",
     returnToDashboard: "ወደ ዳሽቦርድ ይመለሱ",
     tryAgain: "እንደገና ይሞክሩ",
+    editBtn: "አስተካክል",
+    perKg: "በኪሎ ግራም",
+    perKm: "በኪሎ ሜትር",
+    perMin: "በደቂቃ",
     incomplete: {
       title: "ያልተሟላ ፕሮፋይል",
       description: "የኩባንያዎን መረጃ ለማሟላት አስተዳዳሪውን ያነጋግሩ።",
@@ -316,6 +320,9 @@ const am: Messages = {
     idleAvailableLabel: "ዝግጁ / ስራ ላይ ያልሆኑ",
     readyForAssignments: "ለስራ ዝግጁ",
     manageDrivers: "ሾፌሮችን ያስተዳድሩ",
+    queueManagement: "የሰልፍ ማስተዳደሪያ",
+    allClear: "ሁሉም ሰላም ነው!",
+    noPendingAssignments: "በአሁኑ ጊዜ በመጠባበቂያ ሰልፍ ውስጥ ምንም ትዕዛዝ የለም።",
   },
   sidebar: {
     dashboard: "ዳሽቦርድ",
@@ -328,6 +335,13 @@ const am: Messages = {
     settings: "መቼቶች",
     logOut: "ውጣ",
     roleTitle: "የኩሪየር ሱፐርቫይዘር",
+    language: "ቋንቋ",
+    theme: "ገጽታ",
+    themes: {
+      light: "ብርሃን",
+      dark: "ጨለማ",
+      system: "የስርዓቱ",
+    },
   },
 
   supervisors: {
@@ -459,6 +473,9 @@ const am: Messages = {
       description: "እባክዎን ማጣሪያዎችን ወይም የፍለጋ ቃላትን ያስተካክሉ።",
       noAssignments: "ለእርስዎ ኩባንያ እስካሁን የተመደበ ትዕዛዝ የለም።",
     },
+    errorLoad: "ትዕዛዞችን መጫን አልተቻለም",
+    retry: "እንደገና ይሞክሩ",
+    selectAll: "ሁሉንም ምረጥ",
     batchAssign: "በቡድን ምደብ",
     selected: "ተመርጠዋል",
     clear: "አጽዳ",
@@ -494,6 +511,10 @@ const am: Messages = {
       itemsCount: "{count} ዕቃ(ዎች)",
       itemList: "የዕቃዎች ዝርዝር",
       notes: "ማስታወሻዎች",
+      mapExpand: "አስፋ",
+      mapClose: "ዝጋ",
+      mapPickup: "መነሻ",
+      mapDelivery: "መድረሻ",
     },
     timeline: {
       created: "ተመዝግቧል",
@@ -577,6 +598,9 @@ const am: Messages = {
       noDriversInFleet: "በፍሊትዎ ውስጥ እስካሁን ምንም ሾፌር የለም።",
     },
     addFirstDriver: "የመጀመሪያውን ሾፌር ጨምር",
+    errorLoad: "ሾፌሮችን መጫን አልተቻለም",
+    retry: "እንደገና ይሞክሩ",
+    selectAllDrivers: "ሁሉንም ሾፌሮች ምረጥ",
     editDriver: "ሾፌር አድስ",
     viewPerformance: "አፈጻጸምን ይመልከቱ",
     deactivate: "አሰናብት",
@@ -913,6 +937,7 @@ const am: Messages = {
       deliveryVolume: "የዕቃ አቅርቦት መጠን አዝማሚያ",
       statusBreakdown: "የዕቃ አቅርቦት ሁኔታ ዝርዝር",
       vehicleUsage: "የተሽከርካሪ ዓይነት አጠቃቀም",
+      total: "ጠቅላላ",
     },
     leaderboard: {
       title: "ከፍተኛ አፈጻጸም ያላቸው ሾፌሮች",
@@ -929,6 +954,10 @@ const am: Messages = {
       trucksVans: "ጭነት መኪናዎች",
     },
     export: "ሙሉ ሪፖርት አውርድ",
+    pdfReport: "PDF ሪፖርት",
+    excelReport: "Excel ሪፖርት",
+    failedLoad: "ሪፖርቶችን መጫን አልተቻለም",
+    failedLoadDesc: "እባክዎ ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።",
   },
 
   // ─── Forgot Password ────────────────────────────────────────────────────────

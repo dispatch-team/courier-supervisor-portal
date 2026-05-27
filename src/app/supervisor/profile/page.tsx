@@ -156,7 +156,7 @@ export default function CourierProfilePage() {
                   onClick={() => setEditOpen(true)}
                 >
                   <Pencil className="h-3.5 w-3.5" />
-                  Edit
+                  {t("editBtn" as any)}
                 </Button>
               )}
             </div>
@@ -286,21 +286,21 @@ export default function CourierProfilePage() {
                   <p className="font-semibold">
                     {profile.weight_rate > 0 ? `ETB ${profile.weight_rate}` : "—"}
                   </p>
-                  {profile.weight_rate > 0 && <p className="text-xs text-muted-foreground">per kg</p>}
+                  {profile.weight_rate > 0 && <p className="text-xs text-muted-foreground">{t("perKg" as any)}</p>}
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">{t("distanceRate")}</p>
                   <p className="font-semibold">
                     {profile.distance_rate > 0 ? `ETB ${profile.distance_rate}` : "—"}
                   </p>
-                  {profile.distance_rate > 0 && <p className="text-xs text-muted-foreground">per km</p>}
+                  {profile.distance_rate > 0 && <p className="text-xs text-muted-foreground">{t("perKm" as any)}</p>}
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">{t("timeRate")}</p>
                   <p className="font-semibold">
                     {profile.time_rate > 0 ? `ETB ${profile.time_rate}` : "—"}
                   </p>
-                  {profile.time_rate > 0 && <p className="text-xs text-muted-foreground">per min</p>}
+                  {profile.time_rate > 0 && <p className="text-xs text-muted-foreground">{t("perMin" as any)}</p>}
                 </div>
               </div>
             </div>

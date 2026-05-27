@@ -217,9 +217,9 @@ export default function DriverComparePage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Compare Drivers</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
             <p className="text-sm text-muted-foreground">
-              Side-by-side performance for {selectedDrivers.length} drivers
+              {t("subtitle", { count: selectedDrivers.length.toString() })}
             </p>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function DriverComparePage() {
                 )}
               >
                 <CalendarIcon className="h-3 w-3" />
-                Custom
+                {t("calendar.custom" as any)}
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="p-0 w-auto" sideOffset={6}>

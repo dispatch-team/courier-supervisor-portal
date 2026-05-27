@@ -227,6 +227,10 @@ const en = {
     noProfileDataDesc: "Profile data is unavailable. Contact Admin.",
     returnToDashboard: "Return to Dashboard",
     tryAgain: "Try Again",
+    editBtn: "Edit",
+    perKg: "per kg",
+    perKm: "per km",
+    perMin: "per min",
     incomplete: {
       title: "Profile incomplete",
       description: "Contact Admin to complete your company profile.",
@@ -317,6 +321,9 @@ const en = {
     idleAvailableLabel: "Idle / Available",
     readyForAssignments: "ready for assignments",
     manageDrivers: "Manage Drivers",
+    queueManagement: "Queue Management",
+    allClear: "All Clear!",
+    noPendingAssignments: "No pending assignments in the queue right now.",
   },
   sidebar: {
     dashboard: "Dashboard",
@@ -329,6 +336,13 @@ const en = {
     settings: "Settings",
     logOut: "Log Out",
     roleTitle: "Courier Supervisor",
+    language: "Language",
+    theme: "Theme",
+    themes: {
+      light: "Light",
+      dark: "Dark",
+      system: "System",
+    },
   },
 
   supervisors: {
@@ -460,6 +474,9 @@ const en = {
       description: "Try adjusting your filters or search terms.",
       noAssignments: "No shipments currently assigned to your courier company.",
     },
+    errorLoad: "Failed to load shipments",
+    retry: "Try Again",
+    selectAll: "Select all",
     batchAssign: "Batch Assign",
     selected: "selected",
     clear: "Clear",
@@ -495,6 +512,10 @@ const en = {
       itemsCount: "{count} item(s)",
       itemList: "Item List",
       notes: "Notes",
+      mapExpand: "Expand",
+      mapClose: "Close",
+      mapPickup: "Pickup",
+      mapDelivery: "Delivery",
     },
     timeline: {
       created: "Created",
@@ -578,6 +599,9 @@ const en = {
       noDriversInFleet: "No drivers in your fleet yet.",
     },
     addFirstDriver: "Add your first driver",
+    errorLoad: "Failed to load drivers",
+    retry: "Try Again",
+    selectAllDrivers: "Select all drivers",
     editDriver: "Edit Driver",
     viewPerformance: "View Performance",
     deactivate: "Deactivate",
@@ -915,6 +939,7 @@ const en = {
       deliveryVolume: "Delivery Volume Trend",
       statusBreakdown: "Delivery Status Breakdown",
       vehicleUsage: "Vehicle Type Utilization",
+      total: "Total",
     },
     leaderboard: {
       title: "Top Performing Drivers",
@@ -931,6 +956,10 @@ const en = {
       trucksVans: "Trucks / Vans",
     },
     export: "Export Full Report",
+    pdfReport: "PDF Report",
+    excelReport: "Excel Report",
+    failedLoad: "Failed to load reports",
+    failedLoadDesc: "Please check your connection and try again.",
   },
 
   // ─── Forgot Password ────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ import { Package, LayoutList } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
+import { useI18n } from "@/intl";
 
 interface Assignment {
   id: string;
@@ -17,15 +18,17 @@ interface AssignmentsTableProps {
 }
 
 export function AssignmentsTable({ assignments, className }: AssignmentsTableProps) {
+  const t = useI18n("supervisorDashboard");
+
   return (
     <GlassCard className={className} gradient={false}>
        <div className="absolute top-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
        
        <DashboardSectionHeader 
-         subtitle="Queue Management"
-         title="Pending Assignments"
+         subtitle={t("queueManagement")}
+         title={t("pendingAssignments")}
          action={{ 
-           label: "View all",
+           label: t("viewAll"),
            onClick: () => {}
          }}
        />
@@ -59,7 +62,7 @@ export function AssignmentsTable({ assignments, className }: AssignmentsTablePro
                 size="sm"
                 className="rounded-xl px-4 h-9 border-primary/20 hover:bg-primary/20 text-primary font-bold hover:text-primary transition-all text-xs"
               >
-                Assign
+                {t("assign")}
               </Button>
             </div>
           </motion.div>
@@ -70,9 +73,9 @@ export function AssignmentsTable({ assignments, className }: AssignmentsTablePro
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
               <LayoutList className="h-8 w-8 text-primary/50" />
             </div>
-            <p className="text-foreground font-semibold mb-1">All Clear!</p>
+            <p className="text-foreground font-semibold mb-1">{t("allClear")}</p>
             <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">
-              No pending assignments in the queue right now.
+              {t("noPendingAssignments")}
             </p>
           </div>
         )}

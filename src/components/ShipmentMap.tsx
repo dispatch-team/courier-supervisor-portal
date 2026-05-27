@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useI18n } from "@/intl";
 
 // Force dark text in Leaflet elements (popups, attribution) for dark theme compat
 const LEAFLET_STYLE = `
@@ -86,15 +87,16 @@ function initMap(
 }
 
 function MapLegend({ className = "" }: { className?: string }) {
+  const t = useI18n("shipments");
   return (
     <div className={`flex items-center gap-4 text-xs ${className}`}>
       <div className="flex items-center gap-1.5">
         <div className="w-3 h-3 rounded-full bg-green-500 border border-white shadow-sm" />
-        <span>Pickup</span>
+        <span>{t("details.mapPickup")}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <div className="w-3 h-3 rounded-full bg-red-500 border border-white shadow-sm" />
-        <span>Delivery</span>
+        <span>{t("details.mapDelivery")}</span>
       </div>
     </div>
   );
@@ -110,9 +112,12 @@ interface ShipmentMapProps {
 export function ShipmentMap({
   pickupAddress,
   deliveryAddress,
-  pickupLabel = "Pickup",
-  deliveryLabel = "Delivery",
+  pickupLabel,
+  deliveryLabel,
 }: ShipmentMapProps) {
+  const t = useI18n("shipments");
+  const actualPickupLabel = pickupLabel || t("details.mapPickup");
+  const actualDeliveryLabel = deliveryLabel || t("details.mapDelivery");
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -129,14 +134,14 @@ export function ShipmentMap({
       mapRef.current = null;
     }
 
-    const map = initMap(containerRef.current, pickup, delivery, points, pickupLabel, deliveryLabel);
+    const map = initMap(containerRef.current, pickup, delivery, points, actualPickupLabel, actualDeliveryLabel);
     mapRef.current = map;
 
     return () => {
       map.remove();
       mapRef.current = null;
     };
-  }, [pickupAddress, deliveryAddress]);
+  }, [pickupAddress, deliveryAddress, actualPickupLabel, actualDeliveryLabel]);
 
   useEffect(() => {
     if (!fullscreen) return;
@@ -166,7 +171,7 @@ export function ShipmentMap({
             onClick={() => setFullscreen(true)}
             className="absolute top-3 right-3 z-[1000] bg-white hover:bg-gray-100 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-800 shadow-md"
           >
-            Expand
+            {t("details.mapExpand")}
           </button>
         </div>
         <MapLegend className="text-muted-foreground px-1" />
@@ -177,8 +182,8 @@ export function ShipmentMap({
           pickup={pickup}
           delivery={delivery}
           points={points}
-          pickupLabel={pickupLabel}
-          deliveryLabel={deliveryLabel}
+          pickupLabel={actualPickupLabel}
+          deliveryLabel={actualDeliveryLabel}
           onClose={() => setFullscreen(false)}
         />
       )}
@@ -203,6 +208,7 @@ function FullscreenMap({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [sidebarWidth, setSidebarWidth] = useState(0);
+  const t = useI18n("shipments");
 
   useEffect(() => {
     if (!ref.current) return;
@@ -237,7 +243,7 @@ function FullscreenMap({
           onClick={onClose}
           className="absolute top-4 right-4 z-[10000] bg-white hover:bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-800 shadow-md"
         >
-          Close
+          {t("details.mapClose")}
         </button>
         <MapLegend className="absolute bottom-4 left-4 z-[10000] bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-gray-800 shadow-md" />
       </div>

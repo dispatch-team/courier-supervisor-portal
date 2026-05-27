@@ -403,8 +403,8 @@ export default function DriverPerformancePage({
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-xs">
-                    <LegendDot color="hsl(var(--status-delivered))" label="Delivered" />
-                    <LegendDot color="hsl(var(--status-failed))" label="Failed" />
+                    <LegendDot color="hsl(var(--status-delivered))" label={t("metrics.delivered")} />
+                    <LegendDot color="hsl(var(--status-failed))" label={t("metrics.failed")} />
                   </div>
                 </div>
               </CardHeader>
@@ -518,9 +518,9 @@ export default function DriverPerformancePage({
             <Card>
               <CardHeader>
                 <div className="flex items-baseline justify-between">
-                  <CardTitle className="text-base">Failure Reasons</CardTitle>
+                  <CardTitle className="text-base">{t("failureReasons.title")}</CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    {metrics.failed} failed shipment{metrics.failed > 1 ? "s" : ""}
+                    {t("failureReasons.failedCount", { count: metrics.failed.toString(), s: metrics.failed > 1 ? "s" : "" })}
                   </span>
                 </div>
               </CardHeader>

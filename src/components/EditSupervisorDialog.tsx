@@ -15,7 +15,7 @@ import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useUpdateSupervisor } from "@/hooks/queries/use-update-supervisor";
 import { validateName, validateEmail, validatePhone } from "@/lib/validation";
 import type { Supervisor } from "@/types/api";
-import { useI18n } from "@/intl";
+import { useI18n, useTranslateValidationError } from "@/intl";
 
 interface EditSupervisorDialogProps {
   supervisor: Supervisor | null;
@@ -41,6 +41,7 @@ interface FormState {
 
 export function EditSupervisorDialog({ supervisor, companyId, open, onOpenChange }: EditSupervisorDialogProps) {
   const t = useI18n("supervisors");
+  const tVal = useTranslateValidationError();
   const [form, setForm] = useState<FormState>({
     first_name: "", middle_name: "", last_name: "", email: "", phone_number: "", status: "active",
   });
@@ -129,7 +130,7 @@ export function EditSupervisorDialog({ supervisor, companyId, open, onOpenChange
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">{t("edit.firstName" as any)} *</label>
                 <input className={inputClass} {...field("first_name")} />
-                {errors.first_name && <p className="text-xs text-destructive">{errors.first_name}</p>}
+                {errors.first_name && <p className="text-xs text-destructive">{tVal(errors.first_name)}</p>}
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">{t("edit.middleName" as any)}</label>
@@ -140,19 +141,19 @@ export function EditSupervisorDialog({ supervisor, companyId, open, onOpenChange
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">{t("edit.lastName" as any)} *</label>
               <input className={inputClass} {...field("last_name")} />
-              {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
+              {errors.last_name && <p className="text-xs text-destructive">{tVal(errors.last_name)}</p>}
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">{t("edit.email" as any)}</label>
               <input className={inputClass} type="email" {...field("email")} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-destructive">{tVal(errors.email)}</p>}
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">{t("edit.phone" as any)}</label>
               <input className={inputClass} {...field("phone_number")} />
-              {errors.phone_number && <p className="text-xs text-destructive">{errors.phone_number}</p>}
+              {errors.phone_number && <p className="text-xs text-destructive">{tVal(errors.phone_number)}</p>}
             </div>
 
             <div className="space-y-1">

@@ -47,7 +47,7 @@ export function StatusBreakdownChart({ data, total }: StatusBreakdownChartProps)
         {/* Legend */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <p className="text-2xl font-black text-foreground">{total}</p>
-          <p className="text-[8px] font-black uppercase text-muted-foreground">Total</p>
+          <p className="text-[8px] font-black uppercase text-muted-foreground">{t("charts.total" as any)}</p>
         </div>
       </div>
       

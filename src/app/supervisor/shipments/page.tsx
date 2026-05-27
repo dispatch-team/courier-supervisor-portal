@@ -236,9 +236,9 @@ export default function ShipmentsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Failed to load shipments</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("errorLoad" as any)}</h3>
         <p className="text-muted-foreground mb-4">{friendlyError(error)}</p>
-        <Button onClick={() => refetch()}>Try Again</Button>
+        <Button onClick={() => refetch()}>{t("retry" as any)}</Button>
       </div>
     );
   }
@@ -275,7 +275,7 @@ export default function ShipmentsPage() {
                 <Checkbox
                   checked={allSelected ? true : someSelected ? "indeterminate" : false}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all"
+                  aria-label={t("selectAll" as any)}
                 />
               </TableHead>
               <TableHead>

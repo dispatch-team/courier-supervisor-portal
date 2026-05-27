@@ -203,7 +203,7 @@ export function SupervisorSidebar() {
                     <PopoverTrigger asChild>
                       <button
                         className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
-                        title="Language"
+                        title={t("language" as any)}
                       >
                         <Languages className="h-4 w-4" />
                       </button>
@@ -233,7 +233,7 @@ export function SupervisorSidebar() {
                     <PopoverTrigger asChild>
                       <button
                         className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors border border-transparent hover:border-border/50"
-                        title="Theme"
+                        title={t("theme" as any)}
                       >
                         {theme === "dark" ? (
                           <Moon className="h-4 w-4" />
@@ -257,7 +257,7 @@ export function SupervisorSidebar() {
                           )}
                         >
                           <Icon className="h-4 w-4 shrink-0" />
-                          <span className="flex-1 text-left">{label}</span>
+                          <span className="flex-1 text-left">{t(`themes.${value}` as any)}</span>
                           {theme === value && <Check className="h-3.5 w-3.5" />}
                         </button>
                       ))}

@@ -16,7 +16,7 @@
  *  4. Add an entry to LOCALE_LABELS below.
  */
 
-import { useLocale } from "@/intl";
+import { useLocale, useI18n } from "@/intl";
 import type { Locale } from "@/intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,7 @@ const LOCALE_LABELS: Record<Locale, { label: string; native: string }> = {
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { locale, setLocale } = useLocale();
+  const t = useI18n("sidebar");
 
   return (
     <DropdownMenu>
@@ -42,7 +43,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           variant="ghost"
           size="icon"
           className={`h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground ${className ?? ""}`}
-          title="Switch language"
+          title={t("language")}
         >
           <Languages className="h-4 w-4" />
         </Button>

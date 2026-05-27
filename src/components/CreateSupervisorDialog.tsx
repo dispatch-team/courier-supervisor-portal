@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, Shuffle } from "lucide-react";
 import { useCreateSupervisor } from "@/hooks/queries/use-create-supervisor";
 import { validateName, validateEmail, validatePhone } from "@/lib/validation";
-import { useI18n } from "@/intl";
+import { useI18n, useTranslateValidationError } from "@/intl";
 
 interface CreateSupervisorDialogProps {
   companyId: number | undefined;
@@ -65,6 +65,7 @@ const EMPTY_FORM: FormState = {
 
 export function CreateSupervisorDialog({ companyId, open, onOpenChange }: CreateSupervisorDialogProps) {
   const t = useI18n("supervisors");
+  const tVal = useTranslateValidationError();
   const [form, setForm] = useState<FormState>({ ...EMPTY_FORM, password: generatePassword() });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
@@ -133,7 +134,7 @@ export function CreateSupervisorDialog({ companyId, open, onOpenChange }: Create
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">{t("create.firstName" as any)} *</label>
                 <input className={inputClass} placeholder={t("create.firstNamePlaceholder" as any)} {...field("first_name")} />
-                {errors.first_name && <p className="text-xs text-destructive">{errors.first_name}</p>}
+                {errors.first_name && <p className="text-xs text-destructive">{tVal(errors.first_name)}</p>}
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">{t("create.middleName" as any)}</label>
@@ -144,19 +145,19 @@ export function CreateSupervisorDialog({ companyId, open, onOpenChange }: Create
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">{t("create.lastName" as any)} *</label>
               <input className={inputClass} placeholder={t("create.lastNamePlaceholder" as any)} {...field("last_name")} />
-              {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
+              {errors.last_name && <p className="text-xs text-destructive">{tVal(errors.last_name)}</p>}
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">{t("create.email" as any)} *</label>
               <input className={inputClass} type="email" placeholder={t("create.emailPlaceholder" as any)} {...field("email")} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-destructive">{tVal(errors.email)}</p>}
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">{t("create.phone" as any)} *</label>
               <input className={inputClass} placeholder={t("create.phonePlaceholder" as any)} {...field("phone_number")} />
-              {errors.phone_number && <p className="text-xs text-destructive">{errors.phone_number}</p>}
+              {errors.phone_number && <p className="text-xs text-destructive">{tVal(errors.phone_number)}</p>}
             </div>
 
             <div className="space-y-1">
@@ -174,7 +175,7 @@ export function CreateSupervisorDialog({ companyId, open, onOpenChange }: Create
                   {t("create.regenerate" as any)}
                 </Button>
               </div>
-              {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+              {errors.password && <p className="text-xs text-destructive">{tVal(errors.password)}</p>}
             </div>
 
             {mutation.isError && (

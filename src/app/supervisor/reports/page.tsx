@@ -216,8 +216,8 @@ export default function ReportsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Failed to load reports</h3>
-        <p className="text-muted-foreground">Please check your connection and try again.</p>
+        <h3 className="text-lg font-semibold mb-2">{t("failedLoad")}</h3>
+        <p className="text-muted-foreground">{t("failedLoadDesc")}</p>
       </div>
     );
   }
@@ -263,11 +263,11 @@ export default function ReportsPage() {
           <DropdownMenuContent align="end" className="w-44">
             <DropdownMenuItem onClick={() => handleExport("pdf")} className="gap-2">
               <FileText className="h-4 w-4 text-red-400" />
-              <span className="text-sm">PDF Report</span>
+              <span className="text-sm">{t("pdfReport")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleExport("excel")} className="gap-2">
               <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm">Excel Report</span>
+              <span className="text-sm">{t("excelReport")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
