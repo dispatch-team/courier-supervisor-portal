@@ -42,15 +42,18 @@ export function DeactivateDriverDialog({
   const updateMutation = useUpdateDriver();
 
   // Fetch shipments assigned to this driver to warn about active ones
-  const { data: shipmentData } = useShipments(
+  const { data: shipmentData, isFetching: shipmentsFetching } = useShipments(
     driver
       ? { assigned_driver_id: driver.id, page_size: 100 }
       : {},
   );
 
-  const activeShipments = (shipmentData?.shipments ?? []).filter(
-    (s) => ACTIVE_SHIPMENT_STATUSES.includes(s.status),
-  );
+  // Guard against keepPreviousData showing stale data from the last driver
+  const activeShipments = shipmentsFetching
+    ? []
+    : (shipmentData?.shipments ?? []).filter(
+        (s) => ACTIVE_SHIPMENT_STATUSES.includes(s.status),
+      );
 
   useEffect(() => {
     if (open) {

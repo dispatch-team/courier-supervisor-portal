@@ -43,13 +43,16 @@ export function DeleteDriverDialog({
   const { companyId } = useCompanyId();
   const deleteMutation = useDeleteDriver();
 
-  const { data: shipmentData } = useShipments(
+  const { data: shipmentData, isFetching: shipmentsFetching } = useShipments(
     driver ? { assigned_driver_id: driver.id, page_size: 100 } : {},
   );
 
-  const inProgressShipments = (shipmentData?.shipments ?? []).filter(
-    (s) => IN_PROGRESS_STATUSES.includes(s.status),
-  );
+  // Guard against keepPreviousData showing stale data from the last driver
+  const inProgressShipments = shipmentsFetching
+    ? []
+    : (shipmentData?.shipments ?? []).filter(
+        (s) => IN_PROGRESS_STATUSES.includes(s.status),
+      );
 
   const hasInProgress = inProgressShipments.length > 0;
 
