@@ -78,7 +78,6 @@ export function AssignDriverDialog({
 
   const isDeliveredOrCancelled =
     shipment.status === "delivered" || shipment.status === "cancelled";
-  const isDriverAssigned = shipment.status === "assigned_to_driver";
   const isAlreadyAssigned = !!shipment.assigned_driver_id;
 
   const getTranslatedDescription = (code: string) => {
@@ -122,13 +121,6 @@ export function AssignDriverDialog({
             <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
             <p className="text-sm">
               {getTranslatedCannotAssign(shipment.status)}
-            </p>
-          </div>
-        ) : isDriverAssigned ? (
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
-            <p className="text-sm text-amber-700 dark:text-amber-400">
-              {t("assignDialog.driverAlreadyAssigned" as never)}
             </p>
           </div>
         ) : (
@@ -213,7 +205,7 @@ export function AssignDriverDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             {tDrivers("dialogs.cancel")}
           </Button>
-          {!isDeliveredOrCancelled && !isDriverAssigned && (
+          {!isDeliveredOrCancelled && (
             <Button
               onClick={handleAssign}
               disabled={!canAssign}
