@@ -39,7 +39,9 @@ export function ReactivateDriverDialog({
       setSuccess(false);
       updateMutation.reset();
     }
-  }, [open, updateMutation]);
+    // updateMutation excluded intentionally — new object reference every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleReactivate = () => {
     if (!driver || !companyId) return;

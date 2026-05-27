@@ -53,14 +53,15 @@ export function DeleteDriverDialog({
 
   const hasInProgress = inProgressShipments.length > 0;
 
-  const resetMutation = deleteMutation.reset;
   useEffect(() => {
     if (open) {
       setConfirmed(false);
       setSuccess(false);
-      resetMutation();
+      deleteMutation.reset();
     }
-  }, [open, resetMutation]);
+    // deleteMutation excluded intentionally — new object reference every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleDelete = () => {
     if (!driver || !companyId || !confirmed || hasInProgress) return;
